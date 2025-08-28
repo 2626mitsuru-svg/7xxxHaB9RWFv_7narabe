@@ -1,13 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // / → public/site/index.html にリライト
-  async rewrites() {
-    return [{ source: '/', destination: '/site/index.html' }];
-  },
-
-  // Next の型チェック/ESLint をビルド時は無効化（Vite側でビルド済みのため）
+  // ここは空でOK（rewrites は page.tsx の redirect に一本化）
   typescript: { ignoreBuildErrors: true },
   eslint: { ignoreDuringBuilds: true }
 };
-
 module.exports = nextConfig;
