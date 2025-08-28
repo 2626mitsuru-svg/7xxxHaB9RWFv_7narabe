@@ -1,0 +1,6 @@
+{
+  "routes": [
+    { "src": "/api/auth-proxy", "dest": "/api/auth-proxy.js" },
+    { "src": "/(.*)", "dest": "/api/auth-proxy.js" }
+  ]
+}
