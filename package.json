@@ -45,16 +45,12 @@
     "sonner": "^2.0.3",
     "tailwind-merge": "*",
     "vaul": "^1.1.2",
-
-    // ▼ 追加（Next.jsを導入）
     "next": "14.2.5"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
     "@vitejs/plugin-react-swc": "^3.10.2",
     "vite": "6.3.5",
-
-    // ▼ 追加（型定義など）
     "typescript": "5.4.5",
     "@types/react": "18.2.66",
     "@types/react-dom": "18.2.22"
