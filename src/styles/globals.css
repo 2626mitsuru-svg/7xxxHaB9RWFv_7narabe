@@ -1,0 +1,506 @@
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --font-size: 14px;
+  --background: #ffffff;
+  --foreground: oklch(0.145 0 0);
+  --card: #ffffff;
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: #030213;
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.95 0.0058 264.53);
+  --secondary-foreground: #030213;
+  --muted: #ececf0;
+  --muted-foreground: #717182;
+  --accent: #e9ebef;
+  --accent-foreground: #030213;
+  --destructive: #d4183d;
+  --destructive-foreground: #ffffff;
+  --border: rgba(0, 0, 0, 0.1);
+  --input: transparent;
+  --input-background: #f3f3f5;
+  --switch-background: #cbced4;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: #030213;
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+  
+  /* ★純粋七並べ：アニメーション時間（通常速度） */
+  --card-animation-duration: 300ms;
+  --card-place-duration: 250ms;
+  --card-glow-duration: 400ms;
+  
+  /* 順位別カラー */
+  --rank-1st-primary: #ff69b4; /* ピンク */
+  --rank-1st-secondary: #ff1493;
+  --rank-2nd: #ffd700; /* 金色 */
+  --rank-3rd: #c0c0c0; /* 銀色 */
+  --rank-4th: #87ceeb; /* 彩度の低い水色 */
+  --eliminated: #808080; /* 灰色 */
+  
+  /* 優しい虹色パレット（1位用） */
+  --rainbow-1: #ffb3ba; /* 優しいピンク */
+  --rainbow-2: #ffdfba; /* 優しいオレンジ */
+  --rainbow-3: #ffffba; /* 優しい黄色 */
+  --rainbow-4: #baffc9; /* 優しい緑 */
+  --rainbow-5: #bae1ff; /* 優しい青 */
+  --rainbow-6: #d4baff; /* 優しい紫 */
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.145 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.145 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.985 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --border: oklch(0.269 0 0);
+  --input: oklch(0.269 0 0);
+  --ring: oklch(0.439 0 0);
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.269 0 0);
+  --sidebar-ring: oklch(0.439 0 0);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/**
+ * Base typography. This is not applied to elements which have an ancestor with a Tailwind text class.
+ */
+@layer base {
+  :where(:not(:has([class*=" text-"]), :not(:has([class^="text-"])))) {
+    h1 {
+      font-size: var(--text-2xl);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    h2 {
+      font-size: var(--text-xl);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    h3 {
+      font-size: var(--text-lg);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    h4 {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    p {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-normal);
+      line-height: 1.5;
+    }
+
+    label {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    button {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    input {
+      font-size: var(--text-base);
+      font-weight: var(--font-weight-normal);
+      line-height: 1.5;
+    }
+  }
+}
+
+html {
+  font-size: var(--font-size);
+}
+
+/* 七並べUI専用スタイル */
+.speech-tail { 
+  box-shadow: 0 2px 6px rgba(0,0,0,.08); 
+}
+
+/* 吹き出しのしっぽに影をつけて立体感を演出 */
+.speech-tail::before {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+/* ダークモード対応の吹き出しのしっぽ */
+.dark .speech-tail::before {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+/* デバッグログを非表示にする */
+.debug-log {
+  display: none !important;
+}
+
+/* 順位別プレイヤーカード枠スタイル */
+/* 1位：優しい虹色グラデーション（SSR風） */
+@keyframes gentle-rainbow-glow {
+  0% { 
+    border-color: var(--rainbow-1);
+    box-shadow: 0 0 15px rgba(255, 179, 186, 0.5), 0 0 25px rgba(255, 179, 186, 0.3);
+  }
+  16.67% { 
+    border-color: var(--rainbow-2);
+    box-shadow: 0 0 15px rgba(255, 223, 186, 0.5), 0 0 25px rgba(255, 223, 186, 0.3);
+  }
+  33.33% { 
+    border-color: var(--rainbow-3);
+    box-shadow: 0 0 15px rgba(255, 255, 186, 0.5), 0 0 25px rgba(255, 255, 186, 0.3);
+  }
+  50% { 
+    border-color: var(--rainbow-4);
+    box-shadow: 0 0 15px rgba(186, 255, 201, 0.5), 0 0 25px rgba(186, 255, 201, 0.3);
+  }
+  66.67% { 
+    border-color: var(--rainbow-5);
+    box-shadow: 0 0 15px rgba(186, 225, 255, 0.5), 0 0 25px rgba(186, 225, 255, 0.3);
+  }
+  83.33% { 
+    border-color: var(--rainbow-6);
+    box-shadow: 0 0 15px rgba(212, 186, 255, 0.5), 0 0 25px rgba(212, 186, 255, 0.3);
+  }
+  100% { 
+    border-color: var(--rainbow-1);
+    box-shadow: 0 0 15px rgba(255, 179, 186, 0.5), 0 0 25px rgba(255, 179, 186, 0.3);
+  }
+}
+
+.player-card-rank-1st {
+  border-width: 6px !important;
+  animation: gentle-rainbow-glow 5s ease-in-out infinite;
+  background: linear-gradient(135deg, 
+    rgba(255, 179, 186, 0.2) 0%, 
+    rgba(186, 255, 201, 0.15) 50%,
+    rgba(186, 225, 255, 0.2) 100%) !important;
+}
+
+/* 1位の子要素（表情枠、情報枠、吹き出し）にも虹色適用 */
+.player-card-rank-1st .expression-border,
+.player-card-rank-1st .info-border,
+.player-card-rank-1st .speech-bubble {
+  animation: gentle-rainbow-glow 5s ease-in-out infinite;
+  border-width: 3px !important;
+}
+
+/* 2位：金色 */
+.player-card-rank-2nd {
+  border-color: var(--rank-2nd) !important;
+  border-width: 5px !important;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.6), 0 0 30px rgba(255, 215, 0, 0.3) !important;
+  background: linear-gradient(135deg, 
+    rgba(255, 215, 0, 0.2) 0%, 
+    rgba(255, 223, 0, 0.1) 100%) !important;
+}
+
+.player-card-rank-2nd .expression-border,
+.player-card-rank-2nd .info-border,
+.player-card-rank-2nd .speech-bubble {
+  border-color: var(--rank-2nd) !important;
+  border-width: 3px !important;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.4) !important;
+}
+
+/* 3位：銀色 */
+.player-card-rank-3rd {
+  border-color: var(--rank-3rd) !important;
+  border-width: 4px !important;
+  box-shadow: 0 0 10px rgba(192, 192, 192, 0.5), 0 0 20px rgba(192, 192, 192, 0.2) !important;
+  background: linear-gradient(135deg, 
+    rgba(192, 192, 192, 0.15) 0%, 
+    rgba(211, 211, 211, 0.1) 100%) !important;
+}
+
+.player-card-rank-3rd .expression-border,
+.player-card-rank-3rd .info-border,
+.player-card-rank-3rd .speech-bubble {
+  border-color: var(--rank-3rd) !important;
+  border-width: 2px !important;
+  box-shadow: 0 0 8px rgba(192, 192, 192, 0.3) !important;
+}
+
+/* 4位：彩度の低い水色 */
+.player-card-rank-4th {
+  border-color: var(--rank-4th) !important;
+  border-width: 3px !important;
+  box-shadow: 0 0 8px rgba(135, 206, 235, 0.4) !important;
+  background: linear-gradient(135deg, 
+    rgba(135, 206, 235, 0.1) 0%, 
+    rgba(173, 216, 230, 0.08) 100%) !important;
+}
+
+.player-card-rank-4th .expression-border,
+.player-card-rank-4th .info-border,
+.player-card-rank-4th .speech-bubble {
+  border-color: var(--rank-4th) !important;
+  border-width: 2px !important;
+  box-shadow: 0 0 6px rgba(135, 206, 235, 0.3) !important;
+}
+
+/* ドボン・反則上がり：灰色 */
+.player-card-eliminated {
+  border-color: var(--eliminated) !important;
+  border-width: 2px !important;
+  opacity: 0.6 !important;
+  box-shadow: 0 0 5px rgba(128, 128, 128, 0.3) !important;
+  background: linear-gradient(135deg, 
+    rgba(128, 128, 128, 0.1) 0%, 
+    rgba(169, 169, 169, 0.08) 100%) !important;
+}
+
+.player-card-eliminated .expression-border,
+.player-card-eliminated .info-border,
+.player-card-eliminated .speech-bubble {
+  border-color: var(--eliminated) !important;
+  border-width: 1px !important;
+  opacity: 0.7 !important;
+  box-shadow: 0 0 4px rgba(128, 128, 128, 0.2) !important;
+}
+
+/* カードアニメーション関連��通常速度） */
+@keyframes card-place {
+  0% {
+    transform: translate(20px, -20px) scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: translate(10px, -10px) scale(0.9);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes card-seven-initial {
+  0% {
+    transform: translate(30px, -30px) scale(0.6) rotate(5deg);
+    opacity: 0;
+  }
+  70% {
+    transform: translate(5px, -5px) scale(1.1) rotate(-2deg);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes card-glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 5px var(--card-glow-color, rgba(100, 100, 100, 0.3));
+  }
+  50% {
+    box-shadow: 0 0 15px var(--card-glow-color, rgba(100, 100, 100, 0.5)), 
+                0 0 25px var(--card-glow-color, rgba(100, 100, 100, 0.3));
+  }
+}
+
+@keyframes badge-bump {
+  0% { transform: scale(0.8) rotate(-5deg); }
+  25% { transform: scale(1.2) rotate(2deg); }
+  50% { transform: scale(1.3) rotate(-1deg); }
+  75% { transform: scale(1.1) rotate(1deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+/* アニメーション時間を統一（通常速度） */
+.card-place-animation {
+  animation: card-place var(--card-animation-duration) ease-out;
+}
+
+.card-seven-animation {
+  animation: card-seven-initial 0.8s ease-out;
+}
+
+.card-glow {
+  animation: card-glow-pulse var(--card-glow-duration) ease-in-out;
+}
+
+.badge-bump {
+  animation: badge-bump var(--card-place-duration) ease-out;
+}
+
+/* カードバッジ */
+.card-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: bold;
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* プレイヤーカード用の枠色アニメーション */
+.player-card-active {
+  box-shadow: var(--player-border-shadow, 0 0 5px rgba(100, 100, 100, 0.3));
+  transition: box-shadow 0.3s ease-in-out;
+}
+
+.player-card-thinking {
+  box-shadow: var(--player-border-shadow, 0 0 5px rgba(100, 100, 100, 0.3));
+  animation: card-glow-pulse 2s ease-in-out infinite;
+}
+
+/* カード配置時の一時的な光る効果 */
+.card-just-placed {
+  animation: card-glow-pulse 1s ease-out;
+}
+
+/* リアクションエリア（絵文字の枠含む）のポップアップアニメーション */
+@keyframes reaction-popup {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+    filter: drop-shadow(0 0 0px rgba(0, 0, 0, 0));
+  }
+  60% {
+    transform: scale(1.08);
+    opacity: 0.95;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+    filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.1));
+  }
+}
+
+@keyframes reaction-fadeout {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+}
+
+.reaction-popup-animation {
+  animation: reaction-popup 300ms ease-out;
+  transform-origin: center center;
+  will-change: transform, opacity, filter;
+}
+
+.reaction-fadeout-animation {
+  animation: reaction-fadeout 200ms ease-in;
+  transform-origin: center center;
+  will-change: transform, opacity;
+}
+
+/* 絵文字の表示を濃く調整 */
+.reaction-popup-animation span,
+.reaction-fadeout-animation span {
+  opacity: 1 !important;
+  color: inherit !important;
+  filter: none !important;
+  font-weight: normal !important;
+}
