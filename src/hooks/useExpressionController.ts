@@ -87,6 +87,7 @@ interface ExpressionState {
   timeoutId: number | null;
   lastSet: number;
   isPermanent: boolean; // 永続表情フラグ（セリフのisProtectedと同様）
+  epoch: number;        // ★ 追加：世代トークン（レース排除用）
 }
 
 // 表情TTL（ミリ秒）
@@ -106,6 +107,8 @@ const EXPRESSION_TTL = {
 export function useExpressionController() {
   const [expressions, setExpressions] = useState<Record<string, ExpressionState>>({});
   const timeoutsRef = useRef<Record<string, number>>({});
+  // ★ 追加：最新の表情状態を常に参照できる Ref（setTimeout の古いクロージャ対策）
+  const stateRef = useRef<Record<string, ExpressionState>>({});
   
   // イベント単位のデバウンス用状態管理
   const lastEventRef = useRef<Record<string, { eventKey: EventKey; timestamp: number }>>({});
@@ -135,8 +138,12 @@ export function useExpressionController() {
     // 表情検証とフォールバック適用
     const validatedExpression = validateAndFallbackExpression(playerId, expression);
 
-    // 同表情連続抑止
-    if (currentState?.current === validatedExpression && now - currentState.lastSet < 500) {
+    // ★ 1) 同表情連続抑止（neutral は例外：neutral→neutral だけ弾く / neutral→別表情は当然通る）
+    if (
+      currentState?.current === validatedExpression &&
+      validatedExpression !== 'neutral' &&               // ← ここがポイント
+      now - currentState.lastSet < 500
+    ) {
       return;
     }
 
@@ -146,16 +153,25 @@ export function useExpressionController() {
       delete timeoutsRef.current[playerId];
     }
 
+    // ★ 2) epoch を 1 増やして“この適用の世代”を固定
+    const nextEpoch = (currentState?.epoch ?? 0) + 1;
+
     // 新表情設定（検証済み表情を使用）
-    setExpressions(prev => ({
-      ...prev,
-      [playerId]: {
-        current: validatedExpression,
-        timeoutId: null,
-        lastSet: now,
-        isPermanent: options?.forcePermanent || false
-      }
-    }));
+    setExpressions(prev => {
+      const next = {
+        ...prev,
+        [playerId]: {
+          current: validatedExpression,
+          timeoutId: null,
+          lastSet: now,
+          isPermanent: options?.forcePermanent || false,
+          epoch: nextEpoch,
+        }
+      };
+      // ★ 3) Ref も同期して、setTimeout から常に最新が読めるようにする
+      stateRef.current = next as Record<string, ExpressionState>;
+      return next;
+    });
 
     // neutral復帰タイマー設定（neutralの場合や永続表情の場合は除くよ）
   
@@ -164,20 +180,19 @@ export function useExpressionController() {
         validatedExpression === 'thinking' ? EXPRESSION_TTL.thinking() : EXPRESSION_TTL.default()
       );
 
-      const timeoutId = window.setTimeout(() => {
-        // ★直近に別イベントで新しい表情が設定されていたら neutral 復帰はスキップ
-        const current = expressions[playerId];
-        if (!current || current.current !== validatedExpression) {
-          console.debug(`[ExpressionController] ${playerId}: neutral復帰キャンセル（既に別表情）`);
-          return;
-        }
-
-        setExpression(playerId, 'neutral');
-        delete timeoutsRef.current[playerId];
-      }, ttl);
-
-      timeoutsRef.current[playerId] = timeoutId;
-    }
+     // ★ 予約時点の“自分の” epoch をキャプチャ
+     const myEpoch = nextEpoch;
+     const timeoutId = window.setTimeout(() => {
+       // ★ 常に最新状態（Ref）から読む → 古いクロージャ問題を回避
+       const current = stateRef.current[playerId];
+       // 別表情に変わっている / そもそも状態が無い / epoch がズレている → スキップ
+       if (!current || current.current !== validatedExpression || current.epoch !== myEpoch) {
+         console.debug(`[ExpressionController] ${playerId}: neutral復帰キャンセル（競合 or 古いタイマー）`);
+         return;
+       }
+       setExpression(playerId, 'neutral');
+       delete timeoutsRef.current[playerId];
+     }, ttl);
 
 
     // ログは元の表情と検証済み表情の両方を表示
