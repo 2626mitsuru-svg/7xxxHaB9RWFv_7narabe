@@ -505,8 +505,6 @@ const FloatingExpressionArea = () => {
 
   // 枠スタイル（親には transition を当てない＝カード全体がフェードしない）
   const containerStyle = {
-    position: 'relative',          // ★ 浮遊レイヤの基準をこのカードに固定
-    isolation: 'isolate',          // ★ このカード内で z-index を完結（他の効果の影響を遮断）
     background: `linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(${cpuColor.rgb}, 0.15) 100%)`,
     border: `4px solid ${cpuColor.primary}`,
     borderRadius: '20px',
