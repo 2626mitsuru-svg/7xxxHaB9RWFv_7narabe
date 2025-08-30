@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import ImageWithFallback from '@/components/ImageWithFallback'; // 追加：先読み＋クロスフェード画像
+
 import { Player } from '../types/game';
 import { getCPUColor, getPlayerBorderColor } from '../utils/cpuColors';
 
@@ -320,28 +322,13 @@ export function PlayerCard({
         className="w-40 h-40 rounded-full border-4 overflow-hidden bg-white expression-border"
         style={{ borderColor: cpuColor.primary }}
       >
-        <img
-          src={getExpressionUrl(player.id)}
-          alt={`${player.name}の表情`}
-          className="w-full h-full object-cover"
-          data-player-id={player.id}
-          onError={onImageError || ((e) => {
-            const img = e.target as HTMLImageElement;
-            const fallbackUrl = `https://tx-ys-dy8-e6-s9-b-daifugogo.vercel.app/${cpuColor.id.padStart(2, '0')}/neutral.png`;
-            
-            // Prevent infinite loop by checking if we're already using the fallback
-            if (!img.src.includes('neutral.png')) {
-              console.warn(`Expression image failed for ${player.id}, falling back to neutral:`, { 
-                original: img.src, 
-                fallback: fallbackUrl 
-              });
-              img.src = fallbackUrl;
-            } else {
-              console.error(`Fallback image also failed for ${player.id}, using placeholder`);
-              img.src = `https://via.placeholder.com/160/CCCCCC/666666?text=${cpuColor.name}`;
-            }
-          })}
-        />
+<ImageWithFallback
+  src={getExpressionUrl(player.id)}
+  alt={`${player.name}の表情`}
+  className="w-full h-full object-cover"
+  data-player-id={player.id}
+  duration={150}       // フェード時間（必要なら調整）
+/>
       </div>
       {/* リアクションエリア（表情エリアの右上） - 条件付き表示 */}
       {isReactionVisible && (
