@@ -323,12 +323,10 @@ export function PlayerCard({
     return (
       <div className="relative">
         <div
-          className="w-40 h-40 rounded-full border-4 overflow-hidden bg-white expression-border"
-          style={{ borderColor: cpuColor.primary }}
-          // ↓↓↓ 追加（表情丸そのものを 50 層）
-          data-layer="expression"
-          // Tailwind を使うなら className に "z-[50]" を足してもOK
-          // ここでは inline に固定
+        {/* 表情“丸”を相対基準にする */}
+        <div
+          className="w-40 h-40 rounded-full border-4 overflow-hidden bg-white expression-border relative"
+          style={{ borderColor: cpuColor.primary, zIndex: 50 }}
         >
           <ImageWithFallback
             // ★ 親のdivにはtransitionを当てない。ImageWithFallback内部で子<img>のopacityのみ遷移
@@ -342,7 +340,7 @@ export function PlayerCard({
         </div>
 
 
-        {/* リアクションエリア（右上）— 常時マウント & data-state で単発アニメ */}
+        {/* ★ 絵文字は“丸の内側”で右上固定 */}
         {(() => {
           // 吹き出しに同じ絵文字が含まれている場合は見た目の二重を抑止
           const show = shouldShowReaction;
@@ -356,8 +354,8 @@ export function PlayerCard({
               className="reaction-bubble"
               data-state={state}
               style={{
-                top: -8,            // ★ 右上に固定（px明示）
-                right: -8,
+                top: -6,            // ★ 右上に固定（px明示）
+                right: -6,
                 zIndex: 60,         // ★ 表情丸より前、吹き出しより後ろ
               }}
             >
@@ -513,8 +511,6 @@ export function PlayerCard({
 
   // 枠スタイル（親には transition を当てない＝カード全体がフェードしない）
   const containerStyle = {
-    position: 'relative',          // ★ 浮遊レイヤの基準をこのカードに固定
-    isolation: 'isolate',          // ★ このカード内で z-index を完結（他の効果の影響を遮断）
     background: `linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(${cpuColor.rgb}, 0.15) 100%)`,
     border: `4px solid ${cpuColor.primary}`,
     borderRadius: '20px',
