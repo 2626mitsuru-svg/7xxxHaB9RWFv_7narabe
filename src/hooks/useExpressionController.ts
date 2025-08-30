@@ -164,12 +164,20 @@ export function useExpressionController() {
       );
 
       const timeoutId = window.setTimeout(() => {
+        // ★直近に別イベントで新しい表情が設定されていたら neutral 復帰はスキップ
+        const current = expressions[playerId];
+        if (!current || current.current !== validatedExpression) {
+          console.debug(`[ExpressionController] ${playerId}: neutral復帰キャンセル（既に別表情）`);
+          return;
+        }
+
         setExpression(playerId, 'neutral');
         delete timeoutsRef.current[playerId];
       }, ttl);
 
       timeoutsRef.current[playerId] = timeoutId;
     }
+
 
     // ログは元の表情と検証済み表情の両方を表示
     const logMessage = expression !== validatedExpression 
