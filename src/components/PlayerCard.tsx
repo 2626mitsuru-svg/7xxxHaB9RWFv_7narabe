@@ -337,20 +337,22 @@ export function PlayerCard({
           />
         </div>
 
-        {/* リアクションエリア（右上） */}
-        {shouldShowReaction && (
-          <div
-            className={`absolute -top-1 -right-1 w-12 h-12 bg-white rounded-full border-2 border-gray-300 flex items-center justify-center text-xl shadow-lg ${
-              isReactionAnimating
-                ? 'reaction-popup-animation'
-                : isReactionFadingOut
-                ? 'reaction-fadeout-animation'
-                : ''
-            }`}
-          >
-            <span className="inline-block">{currentEmoji}</span>
-          </div>
-        )}
+
+        {/* リアクションエリア（右上）— 常時マウント & data-state で単発アニメ */}
+        {(() => {
+          // 吹き出しに同じ絵文字が含まれている場合は見た目の二重を抑止
+          const show = shouldShowReaction;
+          const state: 'hidden' | 'enter' | 'idle' | 'leave' =
+            !show ? 'hidden'
+            : isReactionAnimating ? 'enter'
+            : isReactionFadingOut ? 'leave'
+            : 'idle';
+          return (
+            <div className="reaction-bubble" data-state={state}>
+              <span className="inline-block">{show ? currentEmoji : ''}</span>
+            </div>
+          );
+        })()}
       </div>
     );
   };

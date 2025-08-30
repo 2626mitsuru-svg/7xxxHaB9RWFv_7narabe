@@ -469,52 +469,39 @@ html {
 }
 
 /* リアクションエリア（絵文字の枠含む）のポップアップアニメーション */
-@keyframes reaction-popup {
-  0% {
-    transform: scale(0.4);
-    opacity: 0;
-    filter: drop-shadow(0 0 0px rgba(0, 0, 0, 0));
-  }
-  60% {
-    transform: scale(1.08);
-    opacity: 0.95;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-    filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.1));
-  }
+/* ==== Reaction bubble animations: enter once, leave once ==== */
+@keyframes reaction-pop {
+  0%   { transform: scale(0.85); opacity: 0; }
+  60%  { transform: scale(1.06); opacity: 1; }
+  100% { transform: scale(1.00); opacity: 1; }
+}
+@keyframes reaction-fade {
+  to { opacity: 0; transform: translateY(-4px); }
 }
 
-@keyframes reaction-fadeout {
-  0% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(0.8);
-    opacity: 0;
-  }
+.reaction-bubble {
+  position: absolute;
+  top: -0.25rem; right: -0.25rem;
+  width: 3rem; height: 3rem;
+  background: #fff;
+  border-radius: 9999px;
+  border: 2px solid #d1d5db; /* gray-300 */
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.25rem;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  pointer-events: none;
+  will-change: opacity, transform;
 }
 
-.reaction-popup-animation {
-  animation: reaction-popup 300ms ease-out;
-  transform-origin: center center;
-  will-change: transform, opacity, filter;
+.reaction-bubble[data-state="enter"] {
+  animation: reaction-pop 280ms ease-out 1 both;
 }
-
-.reaction-fadeout-animation {
-  animation: reaction-fadeout 200ms ease-in;
-  transform-origin: center center;
-  will-change: transform, opacity;
+.reaction-bubble[data-state="idle"] {
+  opacity: 1;
 }
-
-/* 絵文字の表示を濃く調整 */
-.reaction-popup-animation span,
-.reaction-fadeout-animation span {
-  opacity: 1 !important;
-  color: inherit !important;
-  filter: none !important;
-  font-weight: normal !important;
+.reaction-bubble[data-state="leave"] {
+  animation: reaction-fade 180ms ease-in 1 both;
+}
+.reaction-bubble[data-state="hidden"] {
+  opacity: 0;
 }
