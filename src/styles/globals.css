@@ -262,6 +262,20 @@ html {
   }
 }
 
+/* 安定用の箱。必要に応じてサイズは調整 */
+.player-card {
+  position: relative;
+  width: 220px;   /* 実UIに合わせる */
+  height: 160px;  /* 実UIに合わせる */
+  overflow: visible;
+  contain: layout paint size;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  background: transparent;
+}
+.player-card img { position: absolute; inset: 0; object-fit: contain; }
+
+
 .player-card-rank-1st {
   border-width: 6px !important;
   animation: gentle-rainbow-glow 5s ease-in-out infinite;

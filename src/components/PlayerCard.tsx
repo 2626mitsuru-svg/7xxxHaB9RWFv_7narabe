@@ -591,7 +591,7 @@ export function PlayerCard({
 
   return (
     <div 
-      className={`${positionStyles[position]} z-10 ${rankStyleClass} ${isCurrentPlayer ? 'player-card-thinking' : isActive ? 'player-card-active' : ''} transition-all duration-300`}
+      className={`${positionStyles[position]} z-10 ${rankStyleClass} ${isCurrentPlayer ? 'player-card-thinking' : isActive ? 'player-card-active' : ''} `}
       style={containerStyle}
     >
       {/* メインレイアウト */}
