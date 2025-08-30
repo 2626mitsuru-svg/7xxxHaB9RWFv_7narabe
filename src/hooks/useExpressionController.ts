@@ -157,7 +157,8 @@ export function useExpressionController() {
       }
     }));
 
-    // neutral復帰タイマー設定（neutralの場合や永続表情の場合は除く）
+    // neutral復帰タイマー設定（neutralの場合や永続表情の場合は除くよ）
+  
     if (validatedExpression !== 'neutral' && !options?.forcePermanent) {
       const ttl = options?.ttlMs || (
         validatedExpression === 'thinking' ? EXPRESSION_TTL.thinking() : EXPRESSION_TTL.default()
