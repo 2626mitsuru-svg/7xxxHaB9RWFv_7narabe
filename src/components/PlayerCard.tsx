@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
-import ImageWithFallback from '@/components/ImageWithFallback'; // 追加：先読み＋クロスフェード画像
+'use client';
 
+import React, { useState, useEffect, useRef } from 'react';
+import ImageWithFallback from '@/components/ImageWithFallback'; // 先読み＋クロスフェード画像
 import { Player } from '../types/game';
 import { getCPUColor, getPlayerBorderColor } from '../utils/cpuColors';
 
@@ -23,8 +24,8 @@ interface PlayerCardProps {
   getExpressionUrl: (playerId: string) => string;
   onImageError?: (event: React.SyntheticEvent<HTMLImageElement>) => void;
   position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
-  rankings: string[]; // 順位配列を追加
-  allPlayers?: Player[]; // 全プレイヤー情報（他人の手札枚数判定用）
+  rankings: string[]; // 順位配列
+  allPlayers?: Player[]; // 他人の手札枚数判定用
   lastAction?: string; // 最後の行動（パス判定用）
 }
 
@@ -43,11 +44,11 @@ export function PlayerCard({
 }: PlayerCardProps) {
   const cpuColor = getCPUColor(player.id);
   const borderShadow = getPlayerBorderColor(player.id, isCurrentPlayer || isActive);
-  
-  // ★安全に手札枚数を取得
+
+  // ★ 安全に手札枚数を取得
   const handCount = player.handCount ?? player.hand?.length ?? 0;
-  
-  // 絵文字リアクションエリア用状態管理
+
+  // ==== リアクション絵文字（二重表示防止を強化） ====
   const [isReactionVisible, setIsReactionVisible] = useState(false);
   const [isReactionAnimating, setIsReactionAnimating] = useState(false);
   const [isReactionFadingOut, setIsReactionFadingOut] = useState(false);
@@ -55,56 +56,58 @@ export function PlayerCard({
   const reactionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const fadeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  
-  // デバウンス用の状態管理
+
+  // デバウンス用
   const lastReactionTimeRef = useRef<number>(0);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  
-  // ターン切り替え制御用の静的参照（全PlayerCard共通）
+
+  // ★ 追加：同じ絵文字の重複発火を抑止するフラグ
+  const lastShownEmojiRef = useRef<string>('');
+  const isShowingRef = useRef<boolean>(false);
+
+  // ==== ターン切り替え制御 ====
   if (!window.turnChangeController) {
     window.turnChangeController = {
       lastTurnChange: 0,
-      activePlayerId: null
+      activePlayerId: null,
     };
   }
-  
-  // 現在の絵文字を計算（新しい条件に対応）
+
+  // 現在絵文字の計算
   const getCurrentEmoji = () => {
-    // 最優先: 脱落状態
     if (player.isEliminated) return '⚰️';
-    
-    // 次優先: 上がり状態（1位なら王冠のみ、その他は表示なし）
+
     if (player.isFinished) {
       return rankings.indexOf(player.id) === 0 ? '👑' : '😊';
     }
-    
+
     // 自分の手札が2枚または1枚の時
     if (handCount <= 2 && handCount > 0) {
       return '♫';
     }
-    
+
     // 他人の手札が1枚の時
-    const othersWithOneCard = allPlayers.filter(p => 
-      p.id !== player.id && 
-      !p.isFinished && 
-      !p.isEliminated && 
-      (p.handCount ?? p.hand?.length ?? 0) === 1
+    const othersWithOneCard = allPlayers.filter(
+      (p) =>
+        p.id !== player.id &&
+        !p.isFinished &&
+        !p.isEliminated &&
+        (p.handCount ?? p.hand?.length ?? 0) === 1,
     );
     if (othersWithOneCard.length > 0) {
       return '❗️';
     }
-    
+
     // パスした時（最後の行動がパスの場合、ただし自分のターン中は除く）
     if (lastAction === 'pass' && !isCurrentPlayer) {
       return '💦';
     }
-    
-    // デフォルト: 笑顔
-    return '😊';
+
+    return '♫';
   };
-  
+
   const currentEmoji = getCurrentEmoji();
-  
+
   // デバッグ: プレイヤー状態の変化を追跡
   const prevPlayerStateRef = useRef<{
     isCurrentPlayer: boolean;
@@ -112,20 +115,20 @@ export function PlayerCard({
     isEliminated: boolean;
     rankIndex: number;
   } | null>(null);
-  
+
   useEffect(() => {
     const currentState = {
       isCurrentPlayer,
       isFinished: player.isFinished,
       isEliminated: player.isEliminated,
-      rankIndex: rankings.indexOf(player.id)
+      rankIndex: rankings.indexOf(player.id),
     };
-    
+
     if (prevPlayerStateRef.current) {
       const prev = prevPlayerStateRef.current;
       const stateChanges: string[] = [];
       let isTurnChange = false;
-      
+
       if (prev.isCurrentPlayer !== currentState.isCurrentPlayer) {
         stateChanges.push(`turn: ${prev.isCurrentPlayer} → ${currentState.isCurrentPlayer}`);
         isTurnChange = true;
@@ -139,249 +142,249 @@ export function PlayerCard({
       if (prev.rankIndex !== currentState.rankIndex) {
         stateChanges.push(`rank: ${prev.rankIndex} → ${currentState.rankIndex}`);
       }
-      
-      // ターン切り替え时の重複制御
+
+      // ターン切り替え時の重複制御
       if (isTurnChange) {
         const now = Date.now();
-        const global = window.turnChangeController;
-        
-        // 新しいターン開���の場合は優先権を与える
+        const global = window.turnChangeController!;
         if (currentState.isCurrentPlayer) {
+          // ターン開始側に優先権
           global.lastTurnChange = now;
           global.activePlayerId = player.id;
           console.log(`[ターン制御] ${player.name}: ターン開始を記録 (優先)`);
         } else {
-          // ターン終了の場合は、同時期に新しいターンが開始されていれば抑制
+          // 終了側は新しい開始が直近なら抑制
           if (now - global.lastTurnChange < 100 && global.activePlayerId && global.activePlayerId !== player.id) {
-            console.log(`[ターン制御] ${player.name}: ターン終了リアクションを抑制 (${global.activePlayerId}のターン開始を優先)`);
+            console.log(
+              `[ターン制御] ${player.name}: ターン終了リアクションを抑制 (${global.activePlayerId}のターン開始を優先)`,
+            );
             prevPlayerStateRef.current = currentState; // 状態だけ更新
             return;
           }
         }
       }
-      
+
       if (stateChanges.length > 0) {
         console.log(`[プレイヤー状態変化] ${player.name}: ${stateChanges.join(', ')}`);
       }
     }
-    
+
     prevPlayerStateRef.current = currentState;
   }, [isCurrentPlayer, player.isFinished, player.isEliminated, rankings, player.name]);
-  
-  // 絵文字変更時のリアクションエリア表示＋アニメーション発火（ターン制御＋デバウンス付き）
+
+  // ==== 絵文字変更時のリアクション表示（デバウンス + 二重防止） ====
   useEffect(() => {
+    // ★ まったく同じなら何もしない（StrictModeやログ更新対策）
+    if (previousEmoji === currentEmoji) return;
+
     if (previousEmoji !== '' && previousEmoji !== currentEmoji) {
       const now = Date.now();
       const timeSinceLastReaction = now - lastReactionTimeRef.current;
-      
-      // ターン切り替えの重複制御チェック
+
+      // ターン絵文字（仮に⚡想定）を使っている場合の優先制御（現状⚡は未使用だが互換維持）
       const isCurrentTurn = currentEmoji === '⚡';
       const wasPreviousTurn = previousEmoji === '⚡';
       const isTurnRelatedChange = isCurrentTurn || wasPreviousTurn;
-      
+
       if (isTurnRelatedChange) {
-        const global = window.turnChangeController;
-        
-        // ターン終了リアクション（⚡ → 😊）を抑制する条件
+        const global = window.turnChangeController!;
         if (wasPreviousTurn && !isCurrentTurn) {
-          // 他のプレイヤーがターン開始してから100ms以内の場合は抑制
           if (global.activePlayerId && global.activePlayerId !== player.id && now - global.lastTurnChange < 100) {
-            console.log(`[絵文字リアクション] ${player.name}: ターン終了リアクションを抑制 (${global.activePlayerId}のターン開始優先)`);
+            console.log(
+              `[絵文字リアクション] ${player.name}: ターン終了リアクションを抑制 (${global.activePlayerId}のターン開始優先)`,
+            );
             setPreviousEmoji(currentEmoji);
             return;
           }
         }
       }
-      
-      // デバウンス: 300ms以内の連続変更は無視
-      if (timeSinceLastReaction < 300) {
-        console.log(`[絵文字リアクション] ${player.name}: デバウンス中 - ${previousEmoji} → ${currentEmoji} (${timeSinceLastReaction}ms前に実行済み)`);
-        // 前の絵文字を更新だけして終了
+
+      // ★ 同じ絵文字が可視中なら再発火しない
+      if (isShowingRef.current && lastShownEmojiRef.current === currentEmoji) {
         setPreviousEmoji(currentEmoji);
         return;
       }
-      
-      // 前回のデバウンスタイマーをクリア
+
+      // デバウンス: 300ms以内の連続変更は無視
+      if (timeSinceLastReaction < 300) {
+        console.log(
+          `[絵文字リアクション] ${player.name}: デバウンス中 - ${previousEmoji} → ${currentEmoji} (${timeSinceLastReaction}ms前に実行済み)`,
+        );
+        setPreviousEmoji(currentEmoji);
+        return;
+      }
+
+      // 既存のデバウンスをクリア
       if (debounceTimeoutRef.current) {
         clearTimeout(debounceTimeoutRef.current);
         debounceTimeoutRef.current = null;
       }
-      
-      // デバウンス付きでリアクションを実行
+
+      // 50ms後に実行（1フレーム圧縮）
       debounceTimeoutRef.current = setTimeout(() => {
         console.log(`[絵文字リアクション] ${player.name}: ${previousEmoji} → ${currentEmoji}`);
-        
-        // 既存のタイマーをクリア
-        if (reactionTimeoutRef.current) {
-          clearTimeout(reactionTimeoutRef.current);
-        }
-        if (fadeTimeoutRef.current) {
-          clearTimeout(fadeTimeoutRef.current);
-        }
-        if (hideTimeoutRef.current) {
-          clearTimeout(hideTimeoutRef.current);
-        }
-        
-        // リアクションエリアを表示してアニメーション開始
+
+        // 既存タイマーをクリア
+        if (reactionTimeoutRef.current) clearTimeout(reactionTimeoutRef.current);
+        if (fadeTimeoutRef.current) clearTimeout(fadeTimeoutRef.current);
+        if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
+
+        // 表示開始
+        isShowingRef.current = true;
+        lastShownEmojiRef.current = currentEmoji;
         setIsReactionVisible(true);
         setIsReactionAnimating(true);
         setIsReactionFadingOut(false);
-        
-        // ポップアップアニメーション终了のタイマー（300ms）
+
+        // ポップアップ終了（300ms）
         reactionTimeoutRef.current = setTimeout(() => {
           setIsReactionAnimating(false);
         }, 300);
-        
-        // フェードアウト開始のタイマー（2.3秒後）
+
+        // フェードアウト開始（2.3s）
         fadeTimeoutRef.current = setTimeout(() => {
           setIsReactionFadingOut(true);
         }, 2300);
-        
-        // リアクションエリア非表示のタイマー（2.5秒後）
+
+        // 非表示（2.5s）
         hideTimeoutRef.current = setTimeout(() => {
           setIsReactionVisible(false);
           setIsReactionFadingOut(false);
+          isShowingRef.current = false; // ★ 可視終了
         }, 2500);
-        
-        // 最後の実行時間を記録
+
         lastReactionTimeRef.current = Date.now();
         debounceTimeoutRef.current = null;
-      }, 50); // 50msのデバウンス
+      }, 50);
     }
-    
-    // 現在の絵文字を前の絵文字として保存（初回は無条件で保存）
+
+    // 現在の絵文字を前の絵文字として保存
     if (previousEmoji !== currentEmoji) {
       setPreviousEmoji(currentEmoji);
     }
   }, [currentEmoji, previousEmoji, player.name]);
-  
+
   // クリーンアップ
   useEffect(() => {
     return () => {
-      if (reactionTimeoutRef.current) {
-        clearTimeout(reactionTimeoutRef.current);
-      }
-      if (fadeTimeoutRef.current) {
-        clearTimeout(fadeTimeoutRef.current);
-      }
-      if (hideTimeoutRef.current) {
-        clearTimeout(hideTimeoutRef.current);
-      }
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current);
-      }
+      if (reactionTimeoutRef.current) clearTimeout(reactionTimeoutRef.current);
+      if (fadeTimeoutRef.current) clearTimeout(fadeTimeoutRef.current);
+      if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
+      if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
     };
   }, []);
-  
-  // 順位によるスタイルクラスを決定
+
+  // ==== 順位スタイル ====
   const getRankStyleClass = () => {
-    // ドボンまたは反則上がりの場合は灰色
     if (player.isEliminated) {
       return 'player-card-eliminated';
     }
-    
-    // 上がったプレイヤーの順位を確認
     if (player.isFinished && rankings.length > 0) {
       const playerRankIndex = rankings.indexOf(player.id);
       if (playerRankIndex !== -1) {
-        const rank = playerRankIndex + 1; // 1始まりの順位
+        const rank = playerRankIndex + 1;
         switch (rank) {
-          case 1: return 'player-card-rank-1st';
-          case 2: return 'player-card-rank-2nd';
-          case 3: return 'player-card-rank-3rd';
-          case 4: return 'player-card-rank-4th';
-          default: return '';
+          case 1:
+            return 'player-card-rank-1st';
+          case 2:
+            return 'player-card-rank-2nd';
+          case 3:
+            return 'player-card-rank-3rd';
+          case 4:
+            return 'player-card-rank-4th';
+          default:
+            return '';
         }
       }
     }
-    
     return '';
   };
-  
+
   const rankStyleClass = getRankStyleClass();
-  
-  // ポジション別のスタイル設定（表情円のはみ出しを考慮して調整）
+
+  // ==== 位置スタイル（固定配置） ====
   const positionStyles = {
-    'top-left': 'fixed top-12 left-12', // 表情円の上46px+余裕を考慮
-    'top-right': 'fixed top-12 right-12', // 表情円の上46px+余裕を考慮
-    'bottom-left': 'fixed bottom-12 left-12', // 表情円の下46px+余裕を考慮
-    'bottom-right': 'fixed bottom-12 right-12', // 表情円の下46px+余裕を考慮
+    'top-left': 'fixed top-12 left-12',
+    'top-right': 'fixed top-12 right-12',
+    'bottom-left': 'fixed bottom-12 left-12',
+    'bottom-right': 'fixed bottom-12 right-12',
   };
 
-  // ①表情エリア（レイアウト保持用の透明スペース）
+  // ① 表情エリア（レイアウト保持）
   const ExpressionArea = () => (
-    <div className="w-40 h-40 opacity-0 pointer-events-none">
-      {/* レイアウト保持用の透明な円 */}
-    </div>
+    <div className="w-40 h-40 opacity-0 pointer-events-none">{/* スペーサー */}</div>
   );
 
-  // 浮遊する表情円＋リアクション欄（セット）- 背景を白に
-  const FloatingExpressionArea = () => (
-    <div className="relative">
-      <div 
-        className="w-40 h-40 rounded-full border-4 overflow-hidden bg-white expression-border"
-        style={{ borderColor: cpuColor.primary }}
-      >
-<ImageWithFallback
-  src={getExpressionUrl(player.id)}
-  alt={`${player.name}の表情`}
-  className="w-full h-full object-cover"
-  data-player-id={player.id}
-  duration={150}       // フェード時間（必要なら調整）
-/>
-      </div>
-      {/* リアクションエリア（表情エリアの右上） - 条件付き表示 */}
-      {isReactionVisible && (
-        <div 
-          className={`absolute -top-1 -right-1 w-12 h-12 bg-white rounded-full border-2 border-gray-300 flex items-center justify-center text-xl shadow-lg ${
-            isReactionAnimating ? 'reaction-popup-animation' : 
-            isReactionFadingOut ? 'reaction-fadeout-animation' : ''
-          }`}
+  // ==== 浮遊する表情円（画像フェードは子imgのみ／親はフェードさせない） ====
+  const FloatingExpressionArea = () => {
+    // 吹き出しに同じ絵文字が含まれているときは、オーバーレイ絵文字を非表示にする（見た目の二重回避）
+    const shouldShowReaction = isReactionVisible && !(speech && speech.includes(currentEmoji));
+
+    return (
+      <div className="relative">
+        <div
+          className="w-40 h-40 rounded-full border-4 overflow-hidden bg-white expression-border"
+          style={{ borderColor: cpuColor.primary }}
         >
-          <span className="inline-block">
-            {currentEmoji}
-          </span>
+          <ImageWithFallback
+            // ★ 親のdivにはtransitionを当てない。ImageWithFallback内部で子<img>のopacityのみ遷移
+            src={getExpressionUrl(player.id)}
+            alt={`${player.name}の表情`}
+            className="w-full h-full object-cover"
+            data-player-id={player.id}
+            duration={180} // 子img のみフェード
+            onError={onImageError as any}
+          />
         </div>
-      )}
-    </div>
-  );
 
-  // ②CPU情報エリア（レイアウト保持用の透明スペース）
-  const InfoArea = () => (
-    <div className="w-32 h-20 opacity-0 pointer-events-none">
-      {/* レイアウト保持用の透明スペース */}
-    </div>
-  );
+        {/* リアクションエリア（右上） */}
+        {shouldShowReaction && (
+          <div
+            className={`absolute -top-1 -right-1 w-12 h-12 bg-white rounded-full border-2 border-gray-300 flex items-center justify-center text-xl shadow-lg ${
+              isReactionAnimating
+                ? 'reaction-popup-animation'
+                : isReactionFadingOut
+                ? 'reaction-fadeout-animation'
+                : ''
+            }`}
+          >
+            <span className="inline-block">{currentEmoji}</span>
+          </div>
+        )}
+      </div>
+    );
+  };
 
-  // 浮遊する情報エリア（改行なし、コンパクト）
+  // ② 情報エリア（レイアウト保持）
+  const InfoArea = () => <div className="w-32 h-20 opacity-0 pointer-events-none" />;
+
+  // 浮遊する情報エリア
   const FloatingInfoArea = () => (
-    <div 
+    <div
       className="bg-white/95 dark:bg-gray-800/95 rounded-xl p-3 border-2 backdrop-blur-sm info-border"
       style={{ borderColor: cpuColor.primary }}
     >
       <div className="space-y-1">
-        <div 
-          className="font-bold text-lg"
-          style={{ color: cpuColor.primary }}
-        >
+        <div className="font-bold text-lg" style={{ color: cpuColor.primary }}>
           {player.name}
-          {/* 順位表示 */}
-          {player.isFinished && rankings.length > 0 && (() => {
-            const rankIndex = rankings.indexOf(player.id);
-            if (rankIndex !== -1) {
-              const rank = rankIndex + 1;
-              const rankEmoji = rank === 1 ? '👑' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '🏁';
-              return <span className="ml-2">{rankEmoji}</span>;
-            }
-            return null;
-          })()}
+          {/* 順位 */}
+          {player.isFinished &&
+            rankings.length > 0 &&
+            (() => {
+              const rankIndex = rankings.indexOf(player.id);
+              if (rankIndex !== -1) {
+                const rank = rankIndex + 1;
+                const rankEmoji = rank === 1 ? '👑' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '🏁';
+                return <span className="ml-2">{rankEmoji}</span>;
+              }
+              return null;
+            })()}
           {/* ドボン表示 */}
           {player.isEliminated && <span className="ml-2">⚰️</span>}
         </div>
-        {/* 改行なしでコンパクトに */}
         <div className="text-sm">
           <span className="text-gray-600 dark:text-gray-400">残り {handCount}枚 パス </span>
-          <span 
+          <span
             className={`font-bold ${player.passCount >= 3 ? 'text-red-500' : ''}`}
             style={{ color: player.passCount >= 3 ? '#ef4444' : cpuColor.primary }}
           >
@@ -392,11 +395,10 @@ export function PlayerCard({
     </div>
   );
 
-  // ③手札エリア（残り枚数を反映したバー）- 背景・枠を透明に
+  // ③ 手札エリア（残り枚数バー）
   const HandArea = () => {
-    const maxCards = 13; // 七並べの最大手札数
-    const cardWidth = 8; // 各カードの幅（px）
-    
+    const maxCards = 13;
+    const cardWidth = 8;
     return (
       <div className="p-2">
         <div className="flex items-center justify-center space-x-0.5">
@@ -404,9 +406,7 @@ export function PlayerCard({
             <div
               key={i}
               className={`h-6 rounded-sm ${
-                i < handCount 
-                  ? 'bg-gray-700 dark:bg-gray-300' 
-                  : 'bg-gray-200 dark:bg-gray-600'
+                i < handCount ? 'bg-gray-700 dark:bg-gray-300' : 'bg-gray-200 dark:bg-gray-600'
               }`}
               style={{ width: `${cardWidth}px` }}
             />
@@ -416,24 +416,19 @@ export function PlayerCard({
     );
   };
 
-  // ④吹き出しエリア（表情エリアに向かってしっぽを配置）
+  // ④ 吹き出しエリア（表情方向にしっぽ）
   const SpeechArea = () => {
     if (!speech) return null;
 
-    // 各位置での吹き出しのしっぽの方向を表情エリアに向ける
     const getBubbleTailClasses = () => {
       switch (position) {
         case 'top-left':
-          // 表情エリアは左上にあるので、吹き出しから左上に向かってしっぽを出す
           return 'before:absolute before:content-[""] before:w-0 before:h-0 before:border-8 before:border-transparent before:border-b-white dark:before:border-b-gray-800 before:-top-4 before:left-6 before:z-10';
         case 'top-right':
-          // 表情エリアは右上にあるので、吹き出しから右上に向かってしっぽを出す
           return 'before:absolute before:content-[""] before:w-0 before:h-0 before:border-8 before:border-transparent before:border-b-white dark:before:border-b-gray-800 before:-top-4 before:right-6 before:z-10';
         case 'bottom-left':
-          // 表情エリアは左下にあるので、吹き出しから左下に向かってしっぽを出す
           return 'before:absolute before:content-[""] before:w-0 before:h-0 before:border-8 before:border-transparent before:border-t-white dark:before:border-t-gray-800 before:-bottom-4 before:left-6 before:z-10';
         case 'bottom-right':
-          // 表情エリアは右下にあるので、吹き出しから右下に向かってしっぽを出す
           return 'before:absolute before:content-[""] before:w-0 before:h-0 before:border-8 before:border-transparent before:border-t-white dark:before:border-t-gray-800 before:-bottom-4 before:right-6 before:z-10';
         default:
           return '';
@@ -441,22 +436,19 @@ export function PlayerCard({
     };
 
     return (
-      <div 
+      <div
         className={`bg-white dark:bg-gray-800 border-2 rounded-xl p-3 shadow-lg max-w-xs speech-tail speech-bubble relative ${getBubbleTailClasses()}`}
         style={{ borderColor: cpuColor.primary }}
       >
-        <p className="text-sm text-gray-800 dark:text-gray-200 leading-tight">
-          {speech}
-        </p>
+        <p className="text-sm text-gray-800 dark:text-gray-200 leading-tight">{speech}</p>
       </div>
     );
   };
 
-  // 位置別レイアウト組み立て（修正版）
+  // 位置別レイアウト（表情と情報の“実体”は浮遊レイヤにあり、ここはスペーサー）
   const getLayoutByPosition = () => {
     switch (position) {
       case 'top-left':
-        // 左上：表情の右隣に情報→吹き出し（16px間隔）→手札
         return (
           <div>
             <div className="flex items-center space-x-3 mb-4" style={{ height: '70px' }}>
@@ -467,9 +459,7 @@ export function PlayerCard({
             <HandArea />
           </div>
         );
-      
       case 'top-right':
-        // 右上：表情の左隣に情報→吹き出し（16px間隔）→手札
         return (
           <div>
             <div className="flex items-center space-x-3 mb-4" style={{ height: '70px' }}>
@@ -480,9 +470,7 @@ export function PlayerCard({
             <HandArea />
           </div>
         );
-      
       case 'bottom-left':
-        // 左下：手札→吹き出し（16px間隔）→表情の右隣に情報
         return (
           <div>
             <HandArea />
@@ -493,9 +481,7 @@ export function PlayerCard({
             </div>
           </div>
         );
-      
       case 'bottom-right':
-        // 右下：手札→吹き出し（16px間隔）→表情の左隣に情報
         return (
           <div>
             <HandArea />
@@ -506,117 +492,106 @@ export function PlayerCard({
             </div>
           </div>
         );
-      
       default:
         return null;
     }
   };
 
-  // ��体の枠スタイル（もっと白に近いグラデーション - rgb値を使用）
+  // 枠スタイル（親には transition を当てない＝カード全体がフェードしない）
   const containerStyle = {
     background: `linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(${cpuColor.rgb}, 0.15) 100%)`,
     border: `4px solid ${cpuColor.primary}`,
     borderRadius: '20px',
     padding: '20px',
     backdropFilter: 'blur(8px)',
-    opacity: isCurrentPlayer || isActive ? 1 : 0.75, // ターン時以外は薄く
+    opacity: isCurrentPlayer || isActive ? 1 : 0.75,
     maxWidth: '380px',
     boxShadow: borderShadow,
-  };
+  } as const;
 
-  // 浮遊する表情円の位置スタイル
+  // 浮遊する表情円の位置
   const getFloatingExpressionStyle = () => {
     const baseStyle = {
       position: 'absolute' as const,
-      zIndex: 50, // playercard枠より上
+      zIndex: 50,
       pointerEvents: 'none' as const,
     };
-
     switch (position) {
       case 'top-left':
-        return { ...baseStyle, top: '-46px', left: '-10px' }; // 上に46px、左に10px
+        return { ...baseStyle, top: '-46px', left: '-10px' };
       case 'top-right':
-        return { ...baseStyle, top: '-46px', right: '-10px' }; // 上に46px、右に10px
+        return { ...baseStyle, top: '-46px', right: '-10px' };
       case 'bottom-left':
-        return { ...baseStyle, bottom: '-46px', left: '-10px' }; // 下に46px、左に10px
+        return { ...baseStyle, bottom: '-46px', left: '-10px' };
       case 'bottom-right':
-        return { ...baseStyle, bottom: '-46px', right: '-10px' }; // 下に46px、右に10px
+        return { ...baseStyle, bottom: '-46px', right: '-10px' };
       default:
         return baseStyle;
     }
   };
 
-  // 浮遊する情報エリアの位置スタイル
+  // 浮遊する情報エリアの位置
   const getFloatingInfoStyle = () => {
     const baseStyle = {
       position: 'absolute' as const,
-      zIndex: 55, // 表情円と同レベル
+      zIndex: 55,
       pointerEvents: 'none' as const,
     };
-
     switch (position) {
       case 'top-left':
-        return { ...baseStyle, top: '20px', left: '170px' }; // 50px下に移動（-30→+20）
+        return { ...baseStyle, top: '20px', left: '170px' };
       case 'top-right':
-        return { ...baseStyle, top: '20px', right: '170px' }; // 50px下に移動（-30→+20）
+        return { ...baseStyle, top: '20px', right: '170px' };
       case 'bottom-left':
-        return { ...baseStyle, bottom: '20px', left: '170px' }; // 20pxに変更
+        return { ...baseStyle, bottom: '20px', left: '170px' };
       case 'bottom-right':
-        return { ...baseStyle, bottom: '20px', right: '170px' }; // 20pxに変更
+        return { ...baseStyle, bottom: '20px', right: '170px' };
       default:
         return baseStyle;
     }
   };
 
-  // ターンマークの位置スタイル（プレイヤーエリア枠の外側）
+  // ターンマーク位置
   const getTurnMarkerStyle = () => {
-    const baseStyle = {
-      position: 'absolute' as const,
-      zIndex: 60, // 表情円より上
-    };
-
+    const baseStyle = { position: 'absolute' as const, zIndex: 60 };
     switch (position) {
       case 'top-left':
-        return { ...baseStyle, bottom: '-20px', right: '-20px' }; // 右下角、外側に20px
+        return { ...baseStyle, bottom: '-20px', right: '-20px' };
       case 'top-right':
-        return { ...baseStyle, bottom: '-20px', left: '-20px' }; // 左下角、外側に20px
+        return { ...baseStyle, bottom: '-20px', left: '-20px' };
       case 'bottom-left':
-        return { ...baseStyle, top: '-20px', right: '-20px' }; // 右上角、外側に20px
+        return { ...baseStyle, top: '-20px', right: '-20px' };
       case 'bottom-right':
-        return { ...baseStyle, top: '-20px', left: '-20px' }; // 左上角、外側に20px
+        return { ...baseStyle, top: '-20px', left: '-20px' };
       default:
         return baseStyle;
     }
   };
 
   return (
-    <div 
-      className={`${positionStyles[position]} z-10 ${rankStyleClass} ${isCurrentPlayer ? 'player-card-thinking' : isActive ? 'player-card-active' : ''} `}
+    <div
+      className={`${positionStyles[position]} z-10 ${rankStyleClass} ${
+        isCurrentPlayer ? 'player-card-thinking' : isActive ? 'player-card-active' : ''
+      }`}
       style={containerStyle}
     >
-      {/* メインレイアウト */}
+      {/* メインレイアウト（スペーサー） */}
       {getLayoutByPosition()}
-      
-      {/* 浮遊する表情円＋リアクション欄（枠からはみ出し） */}
+
+      {/* 浮遊する表情円＋リアクション欄 */}
       <div style={getFloatingExpressionStyle()}>
         <FloatingExpressionArea />
       </div>
-      
-      {/* 浮遊する情報エリア（枠の上にはみ出し） */}
+
+      {/* 浮遊する情報エリア */}
       <div style={getFloatingInfoStyle()}>
         <FloatingInfoArea />
       </div>
-      
-      {/* ターンマーク「▶」（Playercard枠の内側端） */}
+
+      {/* ターンマーク ▶ */}
       {isCurrentPlayer && (
-        <div 
-          style={getTurnMarkerStyle()}
-          className="w-10 h-10 rounded-full flex items-center justify-center text-white shadow-lg"
-        >
-          <div 
-            className="w-full h-full rounded-full flex items-center justify-center text-sm"
-            style={{ backgroundColor: cpuColor.primary }}
-          >
+        <div style={getTurnMarkerStyle()} className="w-10 h-10 rounded-full flex items-center justify-center text-white shadow-lg">
+          <div className="w-full h-full rounded-full flex items-center justify-center text-sm" style={{ backgroundColor: cpuColor.primary }}>
             ▶
           </div>
         </div>
