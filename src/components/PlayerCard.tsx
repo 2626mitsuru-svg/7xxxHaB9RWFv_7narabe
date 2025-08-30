@@ -325,6 +325,10 @@ export function PlayerCard({
         <div
           className="w-40 h-40 rounded-full border-4 overflow-hidden bg-white expression-border"
           style={{ borderColor: cpuColor.primary }}
+          // ↓↓↓ 追加（表情丸そのものを 50 層）
+          data-layer="expression"
+          // Tailwind を使うなら className に "z-[50]" を足してもOK
+          // ここでは inline に固定
         >
           <ImageWithFallback
             // ★ 親のdivにはtransitionを当てない。ImageWithFallback内部で子<img>のopacityのみ遷移
@@ -348,7 +352,15 @@ export function PlayerCard({
             : isReactionFadingOut ? 'leave'
             : 'idle';
           return (
-            <div className="reaction-bubble" data-state={state}>
+            <div
+              className="reaction-bubble"
+              data-state={state}
+              style={{
+                top: -8,            // ★ 右上に固定（px明示）
+                right: -8,
+                zIndex: 60,         // ★ 表情丸より前、吹き出しより後ろ
+              }}
+            >
               <span className="inline-block">{show ? currentEmoji : ''}</span>
             </div>
           );
@@ -440,7 +452,7 @@ export function PlayerCard({
     return (
       <div
         className={`bg-white dark:bg-gray-800 border-2 rounded-xl p-3 shadow-lg max-w-xs speech-tail speech-bubble relative ${getBubbleTailClasses()}`}
-        style={{ borderColor: cpuColor.primary }}
+        style={{ borderColor: cpuColor.primary, position: 'relative', zIndex: 70 }} // ★ 最前面
       >
         <p className="text-sm text-gray-800 dark:text-gray-200 leading-tight">{speech}</p>
       </div>
@@ -501,6 +513,8 @@ export function PlayerCard({
 
   // 枠スタイル（親には transition を当てない＝カード全体がフェードしない）
   const containerStyle = {
+    position: 'relative',          // ★ 浮遊レイヤの基準をこのカードに固定
+    isolation: 'isolate',          // ★ このカード内で z-index を完結（他の効果の影響を遮断）
     background: `linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(${cpuColor.rgb}, 0.15) 100%)`,
     border: `4px solid ${cpuColor.primary}`,
     borderRadius: '20px',
