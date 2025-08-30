@@ -173,8 +173,7 @@ export function useExpressionController() {
       return next;
     });
 
-    // neutral復帰タイマー設定（neutralの場合や永続表情の場合は除くよ）
-  
+    // neutral復帰タイマー設定（neutralの場合や永続表情の場合は除く）
     if (validatedExpression !== 'neutral' && !options?.forcePermanent) {
       const ttl = options?.ttlMs || (
         validatedExpression === 'thinking' ? EXPRESSION_TTL.thinking() : EXPRESSION_TTL.default()
