@@ -9,9 +9,9 @@ type Props = {
 };
 
 export default function EmotionImage({ src, alt = '', className = '', duration = 150 }: Props) {
-  const [current, setCurrent] = useState(src);     // 画面に出している src
-  const [nextSrc, setNextSrc] = useState<string>(); // ロード中の新 src
-  const [showNext, setShowNext] = useState(false);  // フェード表示切替
+  const [current, setCurrent] = useState(src);
+  const [nextSrc, setNextSrc] = useState<string>();
+  const [showNext, setShowNext] = useState(false);
   const mounted = useRef(true);
 
   // src が変わったら先読み
@@ -23,7 +23,6 @@ export default function EmotionImage({ src, alt = '', className = '', duration =
       if (!mounted.current) return;
       setNextSrc(src);
       setShowNext(true);
-      // フェード完了後に current を置き換え
       setTimeout(() => {
         if (!mounted.current) return;
         setCurrent(src);
@@ -35,16 +34,15 @@ export default function EmotionImage({ src, alt = '', className = '', duration =
 
   useEffect(() => () => { mounted.current = false; }, []);
 
-  const common = 'absolute inset-0 w-full h-full object-contain'; // 好みで cover/contain
+  const common = 'absolute inset-0 w-full h-full object-contain';
 
   return (
-    <div className={`relative ${className}`} style={{ transition: `opacity ${duration}ms` }}>
-      {/* 下層：常に現在の画像を表示（白挟み防止） */}
-      <img key={`cur-${current}`} src={current} alt={alt} className={common} draggable={false} />
-      {/* 上層：新画像。読み終わったらフェードイン→切替 */}
+    <div className={`relative ${className}`} /* ← ここでは transition を当てない */>
+      {/* 下層：常に現在の画像を表示 */}
+      <img src={current} alt={alt} className={common} draggable={false} />
+      {/* 上層：新画像。読み終わったらフェードイン */}
       {nextSrc && (
         <img
-          key={`next-${nextSrc}`}
           src={nextSrc}
           alt={alt}
           className={common}
