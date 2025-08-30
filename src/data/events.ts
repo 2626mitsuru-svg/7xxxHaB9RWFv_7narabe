@@ -86,7 +86,7 @@ const CSV_TEXT = String.raw`
 
 id,character,event_key,line_ja_1,line_ja_2,line_ja_3
 1,1主,EVT_PLAYERS_CONFIRMED,よっし,よろしくな,負けないぞ
-1,2主,EVT_PLAYERS_CONFIRMED,よろしくおねがいします！,やるからには勝つぞ,しちならべ？な���なら���？
+1,2主,EVT_PLAYERS_CONFIRMED,よろしくおねがいします！,やるからには勝つぞ,しちならべ？ななならべ？
 1,3主,EVT_PLAYERS_CONFIRMED,やるぞー,俺に勝てるかな？,ま、考えれば勝てるだろ
 1,4主,EVT_PLAYERS_CONFIRMED,よろしく,負けたやつは玄関掃除な,来週の献立を考えねば…
 1,5主,EVT_PLAYERS_CONFIRMED,パパ頑張っちゃうぞ,ポーカーの方が得意かなあ,お手柔らかに
@@ -100,7 +100,7 @@ id,character,event_key,line_ja_1,line_ja_2,line_ja_3
 3,2主,DEALT_HAND_EVAL,これでたたかうのか,わかったぞ,いいてふだだ
 3,3主,DEALT_HAND_EVAL,なるほどね,よし、やろう,これは勝てるな
 3,4主,DEALT_HAND_EVAL,…。なるほど,こういう手札か,これは負けはないな
-3,5主,DEALT_HAND_EVAL,ありがとう！,ふむ���む、なるほどね,ここで役作れそうだけどなあ…
+3,5主,DEALT_HAND_EVAL,ありがとう！,ふ〜む、なるほどね,ここで役作れそうだけどなあ…
 3,6主,DEALT_HAND_EVAL,お兄ちゃん把握！,よ〜し,見て見てこれ…てダメだった
 3,7主,DEALT_HAND_EVAL,ふーん、なるほど,ちゃんと混ざってる？,よし、勝てそうだよ！
 3,8主,DEALT_HAND_EVAL,ありがとうございます,…そうでもありそうです,ふふ、勝てそうですよ〜
@@ -120,7 +120,7 @@ id,character,event_key,line_ja_1,line_ja_2,line_ja_3
 4,11主,AUTO_PLACE_SEVENS,7です！…呼び捨てではないです！,,
 5,1主,STARTER_DECIDED,俺が一番だな,さて、どうするか,
 5,2主,STARTER_DECIDED,さいしょだ！,いちばんか…,
-5,3主,STARTER_DECIDED,ふふ、当然の一番だ,俺のターン���,
+5,3主,STARTER_DECIDED,ふふ、当然の一番だ,俺のターン！！,
 5,4主,STARTER_DECIDED,俺が一番か,…じゃあ、どうしようかな,
 5,5主,STARTER_DECIDED,一番だね,おねだりしてもいいよ,
 5,6主,STARTER_DECIDED,お兄ちゃんいちばん！,お兄ちゃんのターン！,
@@ -139,7 +139,7 @@ id,character,event_key,line_ja_1,line_ja_2,line_ja_3
 6,8主,TURN_START,いきますよ〜,さーて、どうしますか,僕のこと待ってますか？
 6,9主,TURN_START,行きますよ！,どうしましょうか,油断しないでくださいね
 6,10主,TURN_START,よっし,どうするか…,俺のことよく見てるじゃん
-6,11主,TURN_START,��やります！,いきますよ,…見られると恥ずかしいです
+6,11主,TURN_START,…やります！,いきますよ,…見られると恥ずかしいです
 7,1主,NO_LEGAL_MOVES_DETECTED,うっ…,おっと…,なるほど…
 7,2主,NO_LEGAL_MOVES_DETECTED,あれ！？,これって…,むむ…
 7,3主,NO_LEGAL_MOVES_DETECTED,げっ…,やなやつがいるな…,…。
@@ -237,7 +237,7 @@ id,character,event_key,line_ja_1,line_ja_2,line_ja_3
 19,7主,PASS_STRATEGIC,パスだよ,パスしちゃうね,パスだよ〜
 19,8主,PASS_STRATEGIC,パスします,パスです！,僕パスです
 19,9主,PASS_STRATEGIC,…パスです！,パスします,パスです
-19,10主,PASS_STRATEGIC,…俺��パスかな,パスだな,パス
+19,10主,PASS_STRATEGIC,…俺はパスかな,パスだな,パス
 19,11主,PASS_STRATEGIC,パス、です,パスさせてもらいます,…パスです
 20,1主,PASS_STREAK_OBSERVED,お、大丈夫か？,パス続いてるな,またパスか？
 20,2主,PASS_STREAK_OBSERVED,またパスか？,パスなのか,
@@ -261,17 +261,17 @@ id,character,event_key,line_ja_1,line_ja_2,line_ja_3
 21,9主,MUST_PLAY_STATE,えっと、これです,ここです,ここで！
 21,10主,MUST_PLAY_STATE,ここ…だな,これで,これだ
 21,11主,MUST_PLAY_STATE,これです,これかな,…これです
-22,1主,ELIM_RISK_WARNING,ヤバい…,マジで終わり？,うわあああ
-22,2主,ELIM_RISK_WARNING,やべぇ！,終わりじゃん��,くそ〜
-22,3主,ELIM_RISK_WARNING,おい！,マジかよ,終わったな…
-22,4主,ELIM_RISK_WARNING,終わった…,どうしようもない,やばい…
+22,1主,ELIM_RISK_WARNING,ヤバい…,マジで終わり？,うわ〜
+22,2主,ELIM_RISK_WARNING,やばいぞ,おわりか…,くそ〜
+22,3主,ELIM_RISK_WARNING,おい！,マジかよ〜,マジかぁ〜
+22,4主,ELIM_RISK_WARNING,終わった…,どうしようもない,マジか…
 22,5主,ELIM_RISK_WARNING,パパピンチ！,どうしよう…,助けて〜
-22,6主,ELIM_RISK_WARNING,お兄ちゃん死亡！？,やばくない？,ああああ
+22,6主,ELIM_RISK_WARNING,お兄ちゃん死亡！？,やばくない？,あああ〜
 22,7主,ELIM_RISK_WARNING,うわ〜終わった…,どうしようもないよ,やばい〜
 22,8主,ELIM_RISK_WARNING,終わりですか…,どうしましょう…,ピンチです〜
 22,9主,ELIM_RISK_WARNING,終わりですか…,天使の加護を…,困りました…
-22,10主,ELIM_RISK_WARNING,やべぇ…,終わったかも,うわ…
-22,11主,ELIM_RISK_WARNING,…終わりです…,どうしよう…,…助けて…
+22,10主,ELIM_RISK_WARNING,やべ,終わったかも,うわ…
+22,11主,ELIM_RISK_WARNING,…終わりです…,どうしよう…,……！
 25,1主,RELEASE_BLOCK,…これだな,ここかな,…ほい
 25,2主,RELEASE_BLOCK,…これで！,これをだすぞ！,！
 25,3主,RELEASE_BLOCK,しょうがないな,はいはい,これで
@@ -453,7 +453,7 @@ id,character,event_key,line_ja_1,line_ja_2,line_ja_3
 44,3主,FINISH_OTHER,俺が！？,くそ〜、ありえね〜,
 44,4主,FINISH_OTHER,…もう一回だ！,ありえん！,
 44,5主,FINISH_OTHER,ええ〜、パパ残念,パパくやしい！,
-44,6主,FINISH_OTHER,お兄ちゃん最下位���？,お兄ちゃんくやしい！,
+44,6主,FINISH_OTHER,お兄ちゃん最下位！？,お兄ちゃんくやしい！,
 44,7主,FINISH_OTHER,うそでしょ！？,7並べなのに！？,
 44,8主,FINISH_OTHER,…ありえません！,…もう一回です！,
 44,9主,FINISH_OTHER,負けですか〜！？,…もう一回やりませんか？,
