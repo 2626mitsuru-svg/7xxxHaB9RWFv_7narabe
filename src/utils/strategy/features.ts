@@ -1,4 +1,6 @@
 import { GameState, Player, Card, Suit } from "../../types/game";
+// ★ 追加：ESM import に一本化
+import { getLegalMoves } from "../gameLogic";
 
 export type StrategicContext = {
   self: Player;
@@ -12,8 +14,13 @@ export type StrategicContext = {
 export function buildStrategicContext(state: GameState, self: Player): StrategicContext {
   const opponents = state.players.filter(p => p.id !== self.id && !p.isEliminated && !p.isFinished);
   const laneEnds = getLaneEnds(state);
-  const { getLegalMoves } = require("../gameLogic");
+
+  // ★ 削除：require を使わない
+  // const { getLegalMoves } = require("../gameLogic");
+
+  // ★ そのまま import した関数を呼ぶ
   const legalMoves = getLegalMoves(state, self.id) || [];
+
   const maxPass = state.options?.maxPass ?? 3;
   const remainingPasses = Math.max(0, maxPass - (self.passCount ?? 0));
 
@@ -28,28 +35,28 @@ export function buildStrategicContext(state: GameState, self: Player): Strategic
 function getLaneEnds(state: GameState): Record<Suit, { low: number; high: number }> {
   const suits: Suit[] = ["♠", "♥", "♦", "♣"];
   const laneEnds: Record<Suit, { low: number; high: number }> = {} as any;
-  
+
   for (const suit of suits) {
     const row = state.board[suit];
     let low = 6, high = 6; // Start from 7 (index 6)
-    
+
     // Find leftmost card (low end)
     for (let i = 5; i >= 0; i--) {
       if (row[i] !== null && row[i] !== 'GAP') {
         low = i;
       } else break;
     }
-    
-    // Find rightmost card (high end)  
+
+    // Find rightmost card (high end)
     for (let i = 7; i <= 12; i++) {
       if (row[i] !== null && row[i] !== 'GAP') {
         high = i;
       } else break;
     }
-    
+
     laneEnds[suit] = { low, high };
   }
-  
+
   return laneEnds;
 }
 
@@ -67,7 +74,7 @@ export function featOpponentThreat(ctx: StrategicContext): number {
 export function featLanePressure(ctx: StrategicContext, state: GameState): number {
   let score = 0;
   const suits: Suit[] = ["♠", "♥", "♦", "♣"];
-  
+
   for (const suit of suits) {
     const ends = ctx.laneEnds[suit];
     const candidates = getUnseenNeighbors(state, suit, ends);
@@ -110,9 +117,9 @@ function computeTurnDistance(state: GameState, fromId: string, toId: string): nu
   const players = state.players.filter(p => !p.isEliminated && !p.isFinished);
   const fromIndex = players.findIndex(p => p.id === fromId);
   const toIndex = players.findIndex(p => p.id === toId);
-  
+
   if (fromIndex === -1 || toIndex === -1) return 4;
-  
+
   const forward = (toIndex - fromIndex + players.length) % players.length;
   return forward;
 }
@@ -120,25 +127,25 @@ function computeTurnDistance(state: GameState, fromId: string, toId: string): nu
 function getUnseenNeighbors(state: GameState, suit: Suit, ends: { low: number; high: number }): number[] {
   const candidates: number[] = [];
   const row = state.board[suit];
-  
+
   // Check low end neighbor (with AK link)
   const lowNeighbor = ends.low - 1 >= 0 ? ends.low - 1 : 12; // A-K link
   if (row[lowNeighbor] === null) {
     candidates.push(lowNeighbor + 1); // Convert back to rank (1-13)
   }
-  
+
   // Check high end neighbor (with AK link)
   const highNeighbor = ends.high + 1 <= 12 ? ends.high + 1 : 0; // K-A link
   if (row[highNeighbor] === null) {
     candidates.push(highNeighbor + 1); // Convert back to rank (1-13)
   }
-  
+
   return candidates;
 }
 
 function approxSomeoneHas(state: GameState, selfId: string, candidates: number[]): number {
   if (candidates.length === 0) return 0;
-  
+
   // Simple approximation: 30% chance someone has each candidate card
   const baseProb = Math.min(1, candidates.length * 0.3);
   return baseProb;
@@ -146,7 +153,7 @@ function approxSomeoneHas(state: GameState, selfId: string, candidates: number[]
 
 function estimateReleaseByMyBestMove(state: GameState, self: Player, legalMoves: any[]): number {
   if (legalMoves.length === 0) return 0;
-  
+
   // Approximate: playing any card might open up 1-2 new possibilities for opponents
   const avgRelease = legalMoves.length > 0 ? 1.2 : 0;
   return avgRelease;
@@ -155,7 +162,11 @@ function estimateReleaseByMyBestMove(state: GameState, self: Player, legalMoves:
 function estimateMyLegalAfterN(state: GameState, self: Player, nTurns: number): number {
   // Simple approximation: assume we'll have 2-3 legal moves after n turns
   // This would need more sophisticated analysis in a real implementation
-  const { getLegalMoves } = require("../gameLogic");
+
+  // ★ 削除：require を使わない
+  // const { getLegalMoves } = require("../gameLogic");
+
+  // ★ そのまま import した関数を使う
   const currentLegal = getLegalMoves(state, self.id)?.length ?? 0;
   return Math.max(0, currentLegal - nTurns * 0.5);
 }

@@ -19,6 +19,13 @@ import {
 import { recomputeAllLegalMoves } from "./recompute";
 import { CPUActionSystem } from "./cpuActionSystem";
 
+// 0/1ベース混在の安全弁：内部が 0 でも 1 でも常に 1ベースで返す
+const toOneBasedRank = (r: number | undefined | null): number | undefined => {
+  if (typeof r !== "number") return undefined;
+  return r >= 1 ? r : r + 1;
+};
+
+
 /**
  * 手番進行制御システム（Speech Dispatcher対応版）
  * - 観測者単位でのUIイベント発行
@@ -504,49 +511,57 @@ function handlePlayAction(
     }
 
     // 順位確定イベント（最優先）
-    const rank = getRankOfPlayer(state, playerId);
+    const rank0 = getRankOfPlayer(state, playerId);
+    const rank1 = toOneBasedRank(rank0); // ★ 1ベースへ正規化
     console.debug(
-      `[handlePlayAction] Player finished: ${playerId} rank=${rank}`,
+      `[handlePlayAction] Player finished: ${playerId} rank=${rank1}`,
     );
 
-    if (rank === 1) {
+    // ★ ここから（FINISH_* に meta.rank を必ず付与）
+    if (rank1 === 1) {
       unshiftUiFx(state, {
         kind: "react:self:rank",
         playerId,
-        meta: { key: "FINISH_1ST" },
+        meta: { key: "FINISH_1ST", rank: rank1 },
       } as any);
-    } else if (rank === 2) {
+    } else if (rank1 === 2) {
       unshiftUiFx(state, {
         kind: "react:self:rank",
         playerId,
-        meta: { key: "FINISH_2ND" },
+        meta: { key: "FINISH_2ND", rank: rank1 },
       } as any);
-    } else if (rank === 3) {
+    } else if (rank1 === 3) {
       unshiftUiFx(state, {
         kind: "react:self:rank",
         playerId,
-        meta: { key: "FINISH_3RD" },
+        meta: { key: "FINISH_3RD", rank: rank1 },
       } as any);
-    } else if (rank >= 4) {
-      // rank が 4 以上の場合の汎用キーを出したい場合
+    } else if ((rank1 ?? 0) >= 4) {
       unshiftUiFx(state, {
         kind: "react:self:rank",
         playerId,
-        meta: { key: "FINISH_OTHER" },
+        meta: { key: "FINISH_OTHER", rank: rank1 },
       } as any);
     }
+    // ★ ここまで
 
-    // ★修正：順位による勝利/最下位判定
-    const isLastPlace = rank >= 4; // 4位以下は最下位扱い
+    // ★ 1ベースで最下位かどうかを判定（人数に依存）
+    const totalPlayers = state.players.length;
+    const isLastPlace = rank1 === totalPlayers;
+
     console.debug(
-      `[handlePlayAction] Finish reason determination: ${playerId} rank=${rank} isLastPlace=${isLastPlace}`,
+      `[handlePlayAction] Finish reason determination: ${playerId} rank=${rank1} isLastPlace=${isLastPlace}`,
     );
+
+    // ★ react:self:finish にも rank を付与
     unshiftUiFx(state, {
       kind: "react:self:finish",
       playerId,
       reason: isLastPlace ? "lastPlace" : "win",
+      meta: { rank: rank1 },
     } as any);
     finishQueued = true;
+
 
     state.logs.push(
       `${player.name}が${card.suit}${card.rank}を出して上がりました！`,
@@ -582,10 +597,15 @@ function handlePlayAction(
         console.debug(
           `[handlePlayAction] Last place confirmed: ${lastPlayer.id}`,
         );
-        unshiftUiFx(state, {
-          kind: "react:others:lastPlace",
-          playerId: lastPlayer.id,
-        } as any);
+      // ★ まだ finish していない最後の1名の順位は、既に確定した人数+1
+      const lastRank1 = (state.rankings?.length ?? 0) + 1;
+
+      unshiftUiFx(state, {
+        kind: "react:others:lastPlace",
+        playerId: lastPlayer.id,
+        meta: { rank: lastRank1 }, // ★ 1ベース順位を付与
+      } as any);
+
       }
 
       state.actionLock = false;
