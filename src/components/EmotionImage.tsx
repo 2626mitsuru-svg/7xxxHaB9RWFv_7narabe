@@ -1,55 +1,130 @@
-import { useEffect, useRef, useState } from 'react';
+// src/components/EmotionImage.tsx
+'use client';
+import { useEffect, useRef, useState, useMemo } from 'react';
 
 type Props = {
-  src: string;
+  src: string;               // 目標の画像URL
   alt?: string;
   className?: string;
-  /** フェード時間(ms) */
-  duration?: number;
+  duration?: number;         // フェード時間(ms)
 };
 
-export default function EmotionImage({ src, alt = '', className = '', duration = 150 }: Props) {
-  const [current, setCurrent] = useState(src);
-  const [nextSrc, setNextSrc] = useState<string>();
-  const [showNext, setShowNext] = useState(false);
-  const mounted = useRef(true);
+export default function EmotionImage({
+  src,
+  alt = '',
+  className = '',
+  duration = 180,
+}: Props) {
+  // 連続更新の競合排除用 epoch
+  const epochRef = useRef(0);
 
-  // src が変わったら先読み
+  // 表示中(front)と次のフレーム(back)
+  const [frontSrc, setFrontSrc] = useState(src);
+  const [backSrc, setBackSrc]   = useState<string>(src);
+  const [showBack, setShowBack] = useState(false);
+
+  // back <img> への参照（transitionend を受ける）
+  const backImgRef = useRef<HTMLImageElement | null>(null);
+
+  // 余計なキャッシュバスターを無効化（?t=123 などがあると毎回“別画像”扱いで無限フェード）
+  const normalizedSrc = useMemo(() => {
+    try {
+      const u = new URL(src, location.origin);
+      // よくあるバスターを除去（使っていないならそのままでも可）
+      ['t', 'ts', '_ts', 'cb', 'cacheBust'].forEach((k) => u.searchParams.delete(k));
+      return u.toString();
+    } catch {
+      return src;
+    }
+  }, [src]);
+
   useEffect(() => {
-    if (!src || src === current) return;
+    if (!normalizedSrc || normalizedSrc === frontSrc) return;
+
+    const myEpoch = ++epochRef.current;
+    const ctrl = new AbortController();
+
     const img = new Image();
-    img.src = src;
-    img.onload = () => {
-      if (!mounted.current) return;
-      setNextSrc(src);
-      setShowNext(true);
-      setTimeout(() => {
-        if (!mounted.current) return;
-        setCurrent(src);
-        setShowNext(false);
-        setNextSrc(undefined);
-      }, duration);
+    img.decoding = 'async';
+    img.referrerPolicy = 'no-referrer';
+    // 必要なら img.crossOrigin = 'anonymous';
+    img.src = normalizedSrc;
+
+    const setFadeIn = () => {
+      if (epochRef.current !== myEpoch || ctrl.signal.aborted) return;
+      // 裏に読み終わったフレームをセット
+      setBackSrc(normalizedSrc);
+      // 次フレームでフェード開始（同一フレーム内で opacity を変えるとスキップされるブラウザがある）
+      requestAnimationFrame(() => {
+        if (epochRef.current !== myEpoch || ctrl.signal.aborted) return;
+        setShowBack(true);
+      });
     };
-  }, [src, current, duration]);
 
-  useEffect(() => () => { mounted.current = false; }, []);
+    if (img.complete) {
+      // キャッシュ済でも decode 待ちを試みてから
+      (img as any).decode?.().finally(setFadeIn);
+    } else {
+      img.onload = () => (img as any).decode?.().finally(setFadeIn);
+      img.onerror = () => {
+        // 失敗時は front を維持（白を出さない）
+      };
+    }
 
-  const common = 'absolute inset-0 w-full h-full object-contain';
+    return () => {
+      ctrl.abort();
+    };
+  }, [normalizedSrc, frontSrc]);
+
+  // フェード終了を「実際の transitionend」で確定
+  useEffect(() => {
+    const el = backImgRef.current;
+    if (!el) return;
+
+    const onEnd = (e: TransitionEvent) => {
+      if (e.propertyName !== 'opacity') return;
+      // showBack が true → フェードイン完了
+      if (showBack) {
+        setFrontSrc(backSrc);
+        setShowBack(false); // 裏は透明に戻す（ただし常時マウントは維持）
+      }
+    };
+    el.addEventListener('transitionend', onEnd);
+    return () => el.removeEventListener('transitionend', onEnd);
+  }, [showBack, backSrc]);
+
+  const wrapperStyle: React.CSSProperties = {
+    width: '100%',
+    height: '100%',
+    contain: 'layout paint size',
+    backfaceVisibility: 'hidden',
+    transform: 'translateZ(0)',
+  };
+  const common = 'absolute inset-0 w-full h-full object-contain will-change-opacity';
 
   return (
-    <div className={`relative ${className}`} /* ← ここでは transition を当てない */>
-      {/* 下層：常に現在の画像を表示 */}
-      <img src={current} alt={alt} className={common} draggable={false} />
-      {/* 上層：新画像。読み終わったらフェードイン */}
-      {nextSrc && (
-        <img
-          src={nextSrc}
-          alt={alt}
-          className={common}
-          style={{ opacity: showNext ? 1 : 0, transition: `opacity ${duration}ms` }}
-          draggable={false}
-        />
-      )}
+    <div className={`relative ${className}`} style={wrapperStyle}>
+      {/* 下：常時表示（白挟み防止） */}
+      <img
+        src={frontSrc}
+        alt={alt}
+        className={common}
+        style={{ opacity: showBack ? 0 : 1, transition: `opacity ${duration}ms linear` }}
+        decoding="async"
+        loading="eager"
+        draggable={false}
+      />
+      {/* 上：常時マウント。不要時は透明 */}
+      <img
+        ref={backImgRef}
+        src={backSrc}
+        alt={alt}
+        className={common}
+        style={{ opacity: showBack ? 1 : 0, transition: `opacity ${duration}ms linear` }}
+        decoding="async"
+        loading="eager"
+        draggable={false}
+      />
     </div>
   );
 }
