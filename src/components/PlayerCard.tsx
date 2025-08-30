@@ -316,58 +316,50 @@ export function PlayerCard({
   );
 
   // ==== 浮遊する表情円（画像フェードは子imgのみ／親はフェードさせない） ====
-  const FloatingExpressionArea = () => {
-    // 吹き出しに同じ絵文字が含まれているときは、オーバーレイ絵文字を非表示にする（見た目の二重回避）
-    const shouldShowReaction = isReactionVisible && !(speech && speech.includes(currentEmoji));
+// PlayerCard.tsx 内：FloatingExpressionArea を全置換
+const FloatingExpressionArea = () => {
+  // 吹き出しに同じ絵文字が含まれている場合はオーバーレイ絵文字を非表示
+  const shouldShowReaction = isReactionVisible && !(speech && speech.includes(currentEmoji));
 
-    return (
-      <div className="relative">
+  // data-state を一方向に遷移させて単発アニメにする
+  const state: 'hidden' | 'enter' | 'idle' | 'leave' =
+    !shouldShowReaction
+      ? 'hidden'
+      : isReactionAnimating
+      ? 'enter'
+      : isReactionFadingOut
+      ? 'leave'
+      : 'idle';
+
+  return (
+    <div className="relative">
+      {/* 表情“丸”を相対基準にする（ここを基準に絵文字を絶対配置） */}
+      <div
+        className="w-40 h-40 rounded-full border-4 overflow-hidden bg-white expression-border relative"
+        style={{ borderColor: cpuColor.primary, zIndex: 50 }}
+      >
+        <ImageWithFallback
+          src={getExpressionUrl(player.id)}
+          alt={`${player.name}の表情`}
+          className="w-full h-full object-cover"
+          data-player-id={player.id}
+          duration={180}
+          onError={onImageError as any}
+        />
+
+        {/* 絵文字バブル：表情丸の右上に固定（常時マウント＋data-state制御） */}
         <div
-          className="w-40 h-40 rounded-full border-4 overflow-hidden bg-white expression-border"
-          style={{ borderColor: cpuColor.primary }}
-          // ↓↓↓ 追加（表情丸そのものを 50 層）
-          data-layer="expression"
-          // Tailwind を使うなら className に "z-[50]" を足してもOK
-          // ここでは inline に固定
+          className="reaction-bubble"
+          data-state={state}
+          style={{ top: -6, right: -6, zIndex: 60 }}
         >
-          <ImageWithFallback
-            // ★ 親のdivにはtransitionを当てない。ImageWithFallback内部で子<img>のopacityのみ遷移
-            src={getExpressionUrl(player.id)}
-            alt={`${player.name}の表情`}
-            className="w-full h-full object-cover"
-            data-player-id={player.id}
-            duration={180} // 子img のみフェード
-            onError={onImageError as any}
-          />
+          <span className="inline-block">{shouldShowReaction ? currentEmoji : ''}</span>
         </div>
-
-
-        {/* リアクションエリア（右上）— 常時マウント & data-state で単発アニメ */}
-        {(() => {
-          // 吹き出しに同じ絵文字が含まれている場合は見た目の二重を抑止
-          const show = shouldShowReaction;
-          const state: 'hidden' | 'enter' | 'idle' | 'leave' =
-            !show ? 'hidden'
-            : isReactionAnimating ? 'enter'
-            : isReactionFadingOut ? 'leave'
-            : 'idle';
-          return (
-            <div
-              className="reaction-bubble"
-              data-state={state}
-              style={{
-                top: -8,            // ★ 右上に固定（px明示）
-                right: -8,
-                zIndex: 60,         // ★ 表情丸より前、吹き出しより後ろ
-              }}
-            >
-              <span className="inline-block">{show ? currentEmoji : ''}</span>
-            </div>
-          );
-        })()}
       </div>
-    );
-  };
+    </div>
+  );
+};
+
 
   // ② 情報エリア（レイアウト保持）
   const InfoArea = () => <div className="w-32 h-20 opacity-0 pointer-events-none" />;
