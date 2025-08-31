@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect, useRef } from 'react';
 import { useSevensBridge } from './hooks/useSevensBridge';
 import { CPUSelector } from './components/CPUSelector';
