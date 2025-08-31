@@ -5,14 +5,17 @@ import { useSevensBridge } from './hooks/useSevensBridge';
 import { CPUSelector } from './components/CPUSelector';
 import { SevensGameBoard } from './components/SevensGameBoard';
 
-// 'use client' は既にあり
-import { DevErrorBoundary } from './components/DevErrorBoundary';
 
-// return (
-<DevErrorBoundary>
-  <SevensGameBoard ... />
-</DevErrorBoundary>
-// )
+import { DevErrorBoundary } from './components/DevErrorBoundary';
+import SevensGameBoard from './components/SevensGameBoard';
+
+export default function App() {
+  return (
+    <DevErrorBoundary>
+      <SevensGameBoard />
+    </DevErrorBoundary>
+  );
+}
 
 
 export default function App() {
