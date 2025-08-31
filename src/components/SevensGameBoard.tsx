@@ -114,7 +114,7 @@ export function SevensGameBoard({
                   size="sm"
                   className="bg-neutral-800/50 border-neutral-600 text-neutral-300 hover:bg-neutral-700/50 hover:text-white text-xs px-3 py-1"
                 >
-                  {isPlaying ? '⏸️ 一時停止' : '▶️ 自動進行'}
+                  {isPlaying ? '⏸️▶️ 一時停止・進行' : '▶️ 自動進行'}
                 </Button>
                 
                 <Button

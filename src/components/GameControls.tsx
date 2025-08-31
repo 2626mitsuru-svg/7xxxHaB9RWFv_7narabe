@@ -60,7 +60,7 @@ export function GameControls({
                 }
               `}
             >
-              {isPlaying ? '⏸️ 一時停止' : '▶️ 自動進行'}
+              {isPlaying ? '⏸️▶️ 一時停止・進行' : '▶️ 自動進行'}
             </Button>
           </>
         )}
