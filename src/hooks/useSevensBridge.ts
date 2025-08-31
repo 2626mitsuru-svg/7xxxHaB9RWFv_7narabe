@@ -31,6 +31,62 @@ import { speakByPlayerId, EventKey } from "../data/events";
 import { useExpressionController } from "./useExpressionController";
 import { executeSpecialCombinationSpeech } from "../utils/startingCombinationSpeech";
 
+// useSevensBridge.ts（ファイル先頭の import 群の下あたり）
+const REACTION_DEBOUNCE_MS = 250;
+
+type ReactionState = {
+  timeout: ReturnType<typeof setTimeout> | null;
+  epoch: number;
+  lastEmoji: string;
+  lastSet: number;
+};
+const reactionStatesRef = useRef<Record<string /*playerId*/, ReactionState>>({});
+
+// 1122 相当：一時絵文字のセット → TTL後に自動クリア（重複抑制＆レース除去）
+const setReactionEmoji = useCallback((playerId: string, emoji: string, ttl = 4000) => {
+  const now = Date.now();
+  const st = reactionStatesRef.current[playerId] ?? { timeout: null, epoch: 0, lastEmoji: '', lastSet: 0 };
+
+  // 同じ絵文字の連打はデバウンス
+  if (st.lastEmoji === emoji && (now - st.lastSet) < REACTION_DEBOUNCE_MS) return;
+
+  // 世代更新＆前タイマー停止
+  st.epoch += 1;
+  const myEpoch = st.epoch;
+  if (st.timeout) clearTimeout(st.timeout);
+
+  // GameState に反映
+  setGameState(prev => {
+    if (!prev) return prev;
+    return {
+      ...prev,
+      players: prev.players.map(p => p.id === playerId ? { ...p, reactionEmoji: emoji } : p),
+    };
+  });
+
+  st.lastEmoji = emoji;
+  st.lastSet = now;
+
+  // TTL後に自動クリア（世代チェックでレース除去）
+  st.timeout = setTimeout(() => {
+    const cur = reactionStatesRef.current[playerId];
+    if (!cur || cur.epoch !== myEpoch) return; // 新しい絵文字が後から来ていたら何もしない
+    setGameState(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        players: prev.players.map(p =>
+          (p.id === playerId && p.reactionEmoji === emoji) ? { ...p, reactionEmoji: undefined } : p
+        ),
+      };
+    });
+    cur.timeout = null;
+  }, ttl);
+
+  reactionStatesRef.current[playerId] = st;
+}, [setGameState]);
+
+
 /**
  * 七並べゲーム制御フック（Speech Dispatcher版）
  * - 全面的な発話ロジック再設計
@@ -350,6 +406,61 @@ useEffect(() => {
 
     q.forEach((ev) => {
       switch (ev.kind) {
+              
+        case "react:others:cardPlaced": {
+          const targetId = (ev as any).meta?.target as string | undefined;
+          if (targetId) {
+            const blocked = !!(ev as any).meta?.blocked;
+            // BLOCKされた観測者：ビックリ or 冷や汗（短め）
+            setReactionEmoji(targetId, blocked ? "❗️" : "💦", blocked ? 1800 : 1400);
+          }
+          break;
+        }
+        case "react:others:pass": {
+          // パスした本人に冷や汗
+          const by = (ev as any).by as string;
+          if (by) setReactionEmoji(by, "💦", 2000);
+          break;
+        }
+        case "react:others:passStreak": {
+          // 連続パス観測：全員に短い驚き
+          (gameState?.players ?? [])
+            .filter(p => !p.isFinished && !p.isEliminated)
+            .forEach(p => setReactionEmoji(p.id, "❗️", 900));
+          break;
+        }
+        case "react:self:starter": {
+          // 先手確定：本人に♫（少し長め）
+          setReactionEmoji((ev as any).playerId, "♫", 2400);
+          break;
+        }
+        case "react:self:finish": {
+          const id = (ev as any).playerId as string;
+          const reason = (ev as any).reason as "win" | "foul" | "passOver" | "lastPlace";
+          if (id) {
+            // 勝利は🎉、脱落パターンは💦（やや長め）
+            const emoji = (reason === "win") ? "🎉" : "💦";
+            setReactionEmoji(id, emoji, 3200);
+          }
+          break;
+        }
+        case "react:others:massPlacement": {
+          // ドボンの手札一斉展開：他者に💥
+          const loserId = (ev as any).loserId as string;
+          (gameState?.players ?? [])
+            .filter(p => p.id !== loserId)
+            .forEach(p => setReactionEmoji(p.id, "💥", 1800));
+          break;
+        }
+        case "react:others:eliminated": {
+          // 誰かが脱落：他者に短い💦
+          const pid = (ev as any).playerId as string;
+          (gameState?.players ?? [])
+            .filter(p => p.id !== pid)
+            .forEach(p => setReactionEmoji(p.id, "💦", 1200));
+          break;
+        }
+        
         case "react:others:cardPlaced": {
           // meta.target に観測者ID、meta.blocked で BLOCK/NORMAL を判定済み
           const targetId = (ev as any).meta?.target as string | undefined;
@@ -493,6 +604,8 @@ useEffect(() => {
         default:
           console.debug(`[UIEffect] Unhandled event kind: ${ev.kind}`);
           break;
+
+          
       }
     });
 

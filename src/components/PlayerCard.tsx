@@ -73,40 +73,6 @@ export function PlayerCard({
     };
   }
 
-  // 現在絵文字の計算
-  const getCurrentEmoji = () => {
-    if (player.isEliminated) return '⚰️';
-
-    if (player.isFinished) {
-      return rankings.indexOf(player.id) === 0 ? '👑' : '😊';
-    }
-
-    // 自分の手札が2枚または1枚の時
-    if (handCount <= 2 && handCount > 0) {
-      return '😊';
-    }
-
-    // 他人の手札が1枚の時
-    const othersWithOneCard = allPlayers.filter(
-      (p) =>
-        p.id !== player.id &&
-        !p.isFinished &&
-        !p.isEliminated &&
-        (p.handCount ?? p.hand?.length ?? 0) === 1,
-    );
-    if (othersWithOneCard.length > 0) {
-      return '❗️';
-    }
-
-    // パスした時（最後の行動がパスの場合、ただし自分のターン中は除く）
-    if (lastAction === 'pass' && !isCurrentPlayer) {
-      return '💦';
-    }
-
-    return '♫';
-  };
-
-  const currentEmoji = getCurrentEmoji();
 
   // デバッグ: プレイヤー状態の変化を追跡
   const prevPlayerStateRef = useRef<{
@@ -172,97 +138,43 @@ export function PlayerCard({
     prevPlayerStateRef.current = currentState;
   }, [isCurrentPlayer, player.isFinished, player.isEliminated, rankings, player.name]);
 
-  // ==== 絵文字変更時のリアクション表示（デバウンス + 二重防止） ====
-  useEffect(() => {
-    // ★ まったく同じなら何もしない（StrictModeやログ更新対策）
-    if (previousEmoji === currentEmoji) return;
+// ★ 1122踏襲：一時絵文字は GameState 側でTTL管理。
+// PlayerCard は player.reactionEmoji の有無だけでアニメ制御する。
+const tempEmoji = player.reactionEmoji ?? '';
 
-    if (previousEmoji !== '' && previousEmoji !== currentEmoji) {
-      const now = Date.now();
-      const timeSinceLastReaction = now - lastReactionTimeRef.current;
+// 絵文字バブルの enter → idle → leave の簡易アニメ
+useEffect(() => {
+  // タイマー初期化
+  if (reactionTimeoutRef.current) clearTimeout(reactionTimeoutRef.current);
+  if (fadeTimeoutRef.current) clearTimeout(fadeTimeoutRef.current);
+  if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
 
-      // ターン絵文字（仮に⚡想定）を使っている場合の優先制御（現状⚡は未使用だが互換維持）
-      const isCurrentTurn = currentEmoji === '⚡';
-      const wasPreviousTurn = previousEmoji === '⚡';
-      const isTurnRelatedChange = isCurrentTurn || wasPreviousTurn;
+  if (tempEmoji) {
+    // 表示開始
+    isShowingRef.current = true;
+    lastShownEmojiRef.current = tempEmoji;
+    setIsReactionVisible(true);
+    setIsReactionAnimating(true);
+    setIsReactionFadingOut(false);
 
-      if (isTurnRelatedChange) {
-        const global = window.turnChangeController!;
-        if (wasPreviousTurn && !isCurrentTurn) {
-          if (global.activePlayerId && global.activePlayerId !== player.id && now - global.lastTurnChange < 100) {
-            console.log(
-              `[絵文字リアクション] ${player.name}: ターン終了リアクションを抑制 (${global.activePlayerId}のターン開始優先)`,
-            );
-            setPreviousEmoji(currentEmoji);
-            return;
-          }
-        }
-      }
+    // 1122と同等の見え方（ポップ300ms → 待機 → フェード開始→非表示）
+    reactionTimeoutRef.current = setTimeout(() => setIsReactionAnimating(false), 300);
+    fadeTimeoutRef.current = setTimeout(() => setIsReactionFadingOut(true), 2300);
+    hideTimeoutRef.current = setTimeout(() => {
+      setIsReactionVisible(false);
+      setIsReactionFadingOut(false);
+      isShowingRef.current = false;
+    }, 2500);
+  } else {
+    // 絵文字が消えたら直ちに非表示（TTLは上流で終了済み）
+    setIsReactionVisible(false);
+    setIsReactionAnimating(false);
+    setIsReactionFadingOut(false);
+    isShowingRef.current = false;
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [tempEmoji]);
 
-      // ★ 同じ絵文字が可視中なら再発火しない
-      if (isShowingRef.current && lastShownEmojiRef.current === currentEmoji) {
-        setPreviousEmoji(currentEmoji);
-        return;
-      }
-
-      // デバウンス: 300ms以内の連続変更は無視
-      if (timeSinceLastReaction < 300) {
-        console.log(
-          `[絵文字リアクション] ${player.name}: デバウンス中 - ${previousEmoji} → ${currentEmoji} (${timeSinceLastReaction}ms前に実行済み)`,
-        );
-        setPreviousEmoji(currentEmoji);
-        return;
-      }
-
-      // 既存のデバウンスをクリア
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current);
-        debounceTimeoutRef.current = null;
-      }
-
-      // 50ms後に実行（1フレーム圧縮）
-      debounceTimeoutRef.current = setTimeout(() => {
-        console.log(`[絵文字リアクション] ${player.name}: ${previousEmoji} → ${currentEmoji}`);
-
-        // 既存タイマーをクリア
-        if (reactionTimeoutRef.current) clearTimeout(reactionTimeoutRef.current);
-        if (fadeTimeoutRef.current) clearTimeout(fadeTimeoutRef.current);
-        if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
-
-        // 表示開始
-        isShowingRef.current = true;
-        lastShownEmojiRef.current = currentEmoji;
-        setIsReactionVisible(true);
-        setIsReactionAnimating(true);
-        setIsReactionFadingOut(false);
-
-        // ポップアップ終了（300ms）
-        reactionTimeoutRef.current = setTimeout(() => {
-          setIsReactionAnimating(false);
-        }, 300);
-
-        // フェードアウト開始（2.3s）
-        fadeTimeoutRef.current = setTimeout(() => {
-          setIsReactionFadingOut(true);
-        }, 2300);
-
-        // 非表示（2.5s）
-        hideTimeoutRef.current = setTimeout(() => {
-          setIsReactionVisible(false);
-          setIsReactionFadingOut(false);
-          isShowingRef.current = false; // ★ 可視終了
-        }, 2500);
-
-        lastReactionTimeRef.current = Date.now();
-        debounceTimeoutRef.current = null;
-      }, 50);
-    }
-
-    // 現在の絵文字を前の絵文字として保存
-    if (previousEmoji !== currentEmoji) {
-      setPreviousEmoji(currentEmoji);
-    }
-  }, [currentEmoji, previousEmoji, player.name]);
 
   // クリーンアップ
   useEffect(() => {
@@ -318,8 +230,8 @@ export function PlayerCard({
   // ==== 浮遊する表情円（画像フェードは子imgのみ／親はフェードさせない） ====
 // PlayerCard.tsx 内：FloatingExpressionArea を全置換
 const FloatingExpressionArea = () => {
-  // 吹き出しに同じ絵文字が含まれている場合はオーバーレイ絵文字を非表示
-   const shouldShowReaction = isReactionVisible;
+  // reactionEmoji が来ている間だけ表示（上流がTTLで消す）
+   const shouldShowReaction = isReactionVisible && !!tempEmoji;
 
 
   // data-state を一方向に遷移させて単発アニメにする
@@ -354,7 +266,7 @@ const FloatingExpressionArea = () => {
           data-state={state}
           style={{ top: -6, right: -6, zIndex: 60 }}
         >
-          <span className="inline-block">{shouldShowReaction ? currentEmoji : ''}</span>
+          <span className="inline-block">{shouldShowReaction ? tempEmoji : ''}</span>
         </div>
       </div>
     </div>

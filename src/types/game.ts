@@ -66,6 +66,7 @@ export interface Player {
   passCount: number;
   isEliminated: boolean;
   isFinished: boolean;
+  reactionEmoji?: string;
   lastAction?: "play" | "pass" | "eliminate" | "finish";
   lastActionTurn?: number;
   eliminateReason?: "passOver" | "foul"; // ★jokerOnly削除
