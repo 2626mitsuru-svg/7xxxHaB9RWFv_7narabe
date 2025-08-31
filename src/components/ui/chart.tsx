@@ -6,6 +6,8 @@ import * as RechartsPrimitive from "recharts";
 
 import { cn } from "./utils";
 import type { ReactNode } from 'react';
+import { useMemo, useId, useContext } from 'react';
+
 
 
 // Format: { THEME_NAME: CSS_SELECTOR }
@@ -28,7 +30,7 @@ type ChartContextProps = {
 const ChartContext = React.createContext<ChartContextProps | null>(null);
 
 function useChart() {
-  const context = React.useContext(ChartContext);
+  const context = useContext(ChartContext);
 
   if (!context) {
     throw new Error("useChart must be used within a <ChartContainer />");
@@ -49,7 +51,7 @@ function ChartContainer({
     typeof RechartsPrimitive.ResponsiveContainer
   >["children"];
 }) {
-  const uniqueId = React.useId();
+  const uniqueId = useId();
   const chartId = `chart-${id || uniqueId.replace(/:/g, "")}`;
 
   return (

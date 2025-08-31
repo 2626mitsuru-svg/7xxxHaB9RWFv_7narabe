@@ -1,8 +1,9 @@
-'use client';
-
+"use client";
 
 import * as React from "react";
-import * as SliderPrimitive from "@radix-ui/react-slider";
+import * as SliderPrimitive from "@radix-ui/react-slider@1.2.3";
+import { useMemo, useCallback } from 'react';
+
 
 import { cn } from "./utils";
 
