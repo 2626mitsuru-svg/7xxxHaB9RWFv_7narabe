@@ -331,7 +331,6 @@ export function useSevensBridge() {
   // 表情制御システム
   const { setExpressionFromEvent, setPermanentExpression, getExpression, getExpressionUrl } = useExpressionController();
 
-  const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
   const logThrottleRef = useRef<{
     lastUpdate: number;
     queue: string[];
