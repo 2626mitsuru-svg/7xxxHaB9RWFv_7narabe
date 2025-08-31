@@ -298,6 +298,35 @@ export function useSevensBridge() {
     };
   }, [setExpressionFromEvent, setPermanentExpression]);
 
+  // ---- Auto start after matchup (2s) ----
+const autoStartTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+
+
+const scheduleAutoStart = () => {
+  // 連打や再戦でも 1 個だけ動くように毎回クリアして取り直し
+  if (autoStartTimerRef.current) {
+    clearTimeout(autoStartTimerRef.current);
+    autoStartTimerRef.current = null;
+  }
+  autoStartTimerRef.current = setTimeout(() => {
+    // 3秒後に自動で進行開始
+    // 自動進行ループを確実に始動（定義済みの autoPlay を呼ぶ）
+    try { (autoPlay as any)?.(); } catch {}
+  }, 3000);
+};
+
+// アンマウント時や画面切替時に漏れなくタイマー掃除
+useEffect(() => {
+  return () => {
+    if (autoStartTimerRef.current) {
+      clearTimeout(autoStartTimerRef.current);
+      autoStartTimerRef.current = null;
+    }
+  };
+}, []);
+
+
   // ログスロットリング（最大4件/秒）
   const throttledLog = useCallback((message: string) => {
     const now = Date.now();
@@ -572,6 +601,9 @@ export function useSevensBridge() {
         } else {
           console.debug(`[useSevensBridge] Special speech applied by "${specialSpeechSpeaker}", skipping EVT_PLAYERS_CONFIRMED for all players`);
         }
+
+        scheduleAutoStart();
+
         
         // 他の初期イベントは少し遅らせて発話（特殊セリフを見せるため）
         setTimeout(() => {
