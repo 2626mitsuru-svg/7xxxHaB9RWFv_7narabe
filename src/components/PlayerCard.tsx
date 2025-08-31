@@ -316,28 +316,26 @@ export function PlayerCard({
   );
 
   // ==== 浮遊する表情円（画像フェードは子imgのみ／親はフェードさせない） ====
-// PlayerCard.tsx 内：FloatingExpressionArea を全置換
+
+  // PlayerCard.tsx 内：FloatingExpressionArea をこの実装に置き換え
 const FloatingExpressionArea = () => {
-  // 吹き出しに同じ絵文字が含まれている場合はオーバーレイ絵文字を非表示
-   const shouldShowReaction = isReactionVisible;
+  // 吹き出しと被るときは抑制（そのままでOK）
+  const shouldShowReaction = isReactionVisible && !(speech && speech.includes(currentEmoji));
 
-
-  // data-state を一方向に遷移させて単発アニメにする
+  // data-state は一方向に遷移
   const state: 'hidden' | 'enter' | 'idle' | 'leave' =
-    !shouldShowReaction
-      ? 'hidden'
-      : isReactionAnimating
-      ? 'enter'
-      : isReactionFadingOut
-      ? 'leave'
-      : 'idle';
+    !shouldShowReaction ? 'hidden'
+    : isReactionAnimating ? 'enter'
+    : isReactionFadingOut ? 'leave'
+    : 'idle';
 
   return (
-    <div className="relative">
-      {/* 表情“丸”を相対基準にする（ここを基準に絵文字を絶対配置） */}
+    // ★ ここを相対基準にする
+    <div className="relative" style={{ width: 160, height: 160 }}>
+      {/* 丸は “だけ” を overflow-hidden にする */}
       <div
-        className="w-40 h-40 rounded-full border-4 overflow-hidden bg-white expression-border relative"
-        style={{ borderColor: cpuColor.primary, zIndex: 50 }}
+        className="w-40 h-40 rounded-full border-4 bg-white expression-border overflow-hidden"
+        style={{ borderColor: cpuColor.primary, zIndex: 50, position: 'absolute', inset: 0 }}
       >
         <ImageWithFallback
           src={getExpressionUrl(player.id)}
@@ -347,19 +345,25 @@ const FloatingExpressionArea = () => {
           duration={180}
           onError={onImageError as any}
         />
+      </div>
 
-        {/* 絵文字バブル：表情丸の右上に固定（常時マウント＋data-state制御） */}
-        <div
-          className="reaction-bubble"
-          data-state={state}
-          style={{ top: -6, right: -6, zIndex: 60 }}
-        >
-          <span className="inline-block">{shouldShowReaction ? currentEmoji : ''}</span>
-        </div>
+      {/* ★ 絵文字は丸の“外側の兄弟要素”として配置（overflow の影響を受けない） */}
+      <div
+        className="reaction-bubble"
+        data-state={state}
+        style={{
+          position: 'absolute',
+          top: -6,
+          right: -6,
+          zIndex: 60,
+        }}
+      >
+        <span className="inline-block">{shouldShowReaction ? currentEmoji : ''}</span>
       </div>
     </div>
   );
 };
+
 
 
   // ② 情報エリア（レイアウト保持）
