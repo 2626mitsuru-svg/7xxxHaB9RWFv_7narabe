@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { GameState, Card, Suit } from '../types/game';
 import { GAP, isEmptyCell } from '../types/board';
 import { getCPUColor, generateCardBadge, getCardAnimationVars, getSystemColor } from '../utils/cpuColors';

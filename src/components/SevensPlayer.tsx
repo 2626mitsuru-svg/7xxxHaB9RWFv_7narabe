@@ -1,4 +1,3 @@
-import React from 'react';
 import { Player, GameOptions } from '../types/game';
 import { getExpressionSrc, Expression } from '../hooks/useExpressionController';
 import { getMaxPassCount } from '../utils/gameLogic';

@@ -1,4 +1,3 @@
-import React from 'react';
 import { PlayerCard } from './PlayerCard';
 import { BoardSevens } from './BoardSevens';
 import type { PlayerViewModel, SevensBoardModel, GameInfoModel } from '../types/ui';

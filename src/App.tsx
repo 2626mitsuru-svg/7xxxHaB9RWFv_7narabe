@@ -1,4 +1,6 @@
-import React, { useEffect } from 'react';
+'use client';
+
+import { useEffect } from 'react';
 import { useSevensBridge } from './hooks/useSevensBridge';
 import { CPUSelector } from './components/CPUSelector';
 import { SevensGameBoard } from './components/SevensGameBoard';

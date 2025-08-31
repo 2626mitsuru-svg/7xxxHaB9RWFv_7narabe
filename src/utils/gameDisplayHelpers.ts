@@ -62,8 +62,9 @@ export const getPlayerPosition = (index: number): 'top-left' | 'top-right' | 'bo
 };
 
 // 画像エラー時のフォールバック処理（無限ループ防止）
-export const handleImageError = (event: React.SyntheticEvent<HTMLImageElement>) => {
-  const img = event.target as HTMLImageElement;
+import type { SyntheticEvent } from 'react';
+export const handleImageError = (event: SyntheticEvent<HTMLImageElement>) => {
+const img = event.target as HTMLImageElement;
   
   // 既にフォールバック済みまたはneutralの場合は何もしない
   if (img.src.includes('neutral.png') || img.getAttribute('data-fallback-attempted') === 'true') {

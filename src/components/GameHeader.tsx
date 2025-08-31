@@ -1,4 +1,3 @@
-import React from 'react';
 import { GameState, PlayerSpeechState } from '../types/game';
 import { getCPUColor } from '../utils/cpuColors';
 

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Button } from './ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
 import { GameControls } from './GameControls';

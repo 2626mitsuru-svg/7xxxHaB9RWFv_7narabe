@@ -1,4 +1,3 @@
-import React from 'react';
 import { BoardState, Card, GameState } from '../types/game';
 import { getLegalMoves } from '../utils/gameLogic';
 
