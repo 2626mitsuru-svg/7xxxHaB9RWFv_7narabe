@@ -275,6 +275,14 @@ html {
 }
 .player-card img { position: absolute; inset: 0; object-fit: contain; }
 
+.expression-border {
+  background-color: #fff; /* 例: 黒。CPUごとに色を変えたいなら cpuColor.primary を inline style に */
+}
+
+.expression-border img {
+  background-color: transparent; /* img自身は透過 */
+}
+
 
 .player-card-rank-1st {
   border-width: 6px !important;

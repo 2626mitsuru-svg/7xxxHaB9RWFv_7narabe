@@ -319,7 +319,8 @@ export function PlayerCard({
 // PlayerCard.tsx 内：FloatingExpressionArea を全置換
 const FloatingExpressionArea = () => {
   // 吹き出しに同じ絵文字が含まれている場合はオーバーレイ絵文字を非表示
-  const shouldShowReaction = isReactionVisible && !(speech && speech.includes(currentEmoji));
+   const shouldShowReaction = isReactionVisible;
+
 
   // data-state を一方向に遷移させて単発アニメにする
   const state: 'hidden' | 'enter' | 'idle' | 'leave' =
@@ -335,7 +336,7 @@ const FloatingExpressionArea = () => {
     <div className="relative">
       {/* 表情“丸”を相対基準にする（ここを基準に絵文字を絶対配置） */}
       <div
-        className="w-40 h-40 rounded-full border-4 overflow-hidden bg-white expression-border relative"
+        className="w-40 h-40 rounded-full border-4 overflow-hidden expression-border relative"
         style={{ borderColor: cpuColor.primary, zIndex: 50 }}
       >
         <ImageWithFallback

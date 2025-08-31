@@ -61,7 +61,7 @@ export function ImageWithFallback(props: Props) {
     };
   }, []);
 
-  const common = 'absolute inset-0 w-full h-full object-contain'; // 必要に応じて contain/cover を調整
+  const common = 'absolute inset-0 w-full h-full object-cover'; // 必要に応じて contain/cover を調整
 
   return (
     <div className={`relative ${className}`} style={style}>
@@ -80,7 +80,7 @@ export function ImageWithFallback(props: Props) {
           src={nextSrc}
           alt={alt}
           className={common}
-          style={{ opacity: fadeIn ? 1 : 0, transition: `opacity ${duration}ms` }}
+          style={{ opacity: fadeIn ? 1 : 0, transition: `opacity ${duration}ms`, backgroundColor: 'transparent' }}
           draggable={false}
           // 上層の onError はほぼ発火しない（先読みで担保）。保険として fallback に寄せる
           onError={() => setFallback(ERROR_IMG_SRC)}
