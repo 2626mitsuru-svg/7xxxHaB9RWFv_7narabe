@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { AppLayout } from './AppLayout';
 import { GameControls } from './GameControls';

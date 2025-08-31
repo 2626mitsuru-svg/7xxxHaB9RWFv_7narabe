@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect, useRef } from 'react';
 import { GameState, Card, Suit } from '../types/game';
 import { GAP, isEmptyCell } from '../types/board';
