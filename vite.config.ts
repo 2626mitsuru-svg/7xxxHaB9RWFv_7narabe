@@ -1,14 +1,15 @@
+// vite.config.ts
 import { defineConfig } from 'vite';
-
+import react from '@vitejs/plugin-react'; // ★必須（default import）
 import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
-  base: '/site/',               // ← /site 配下に置くため必須
+  base: '/site/',
   resolve: {
     extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
     alias: {
-      // ここで「@バージョン付き」の import を通常名にマッピング
+      // 既存の“@バージョン付き”importを救済するための一時マップ（残してOK）
       'vaul@1.1.2': 'vaul',
       'sonner@2.0.3': 'sonner',
       'recharts@2.15.2': 'recharts',
