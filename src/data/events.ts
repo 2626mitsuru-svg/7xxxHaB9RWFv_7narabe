@@ -537,7 +537,7 @@ id,character,event_key,line_ja_1,line_ja_2,line_ja_3
 39,10主,HAND_COUNT_TWO,このまま行かせてもらうぜ,悪いがこのまま行かせてもらうぜ,
 39,11主,HAND_COUNT_TWO,いい感じです…！,このまま行かせてもらいます…恥ずかしい！,恥ずかしいけど、僕が勝ちます…！
 53,1主,SELF_ELIMINATED,があ〜、やっちまった…,やっちまった…,
-53,2主,SELF_ELIMINATED,くやしいぞ！,やっちまったぞ！,
+53,2主,SELF_ELIMINATED,くやしいぞ！,やってしまったぞ！,
 53,3主,SELF_ELIMINATED,俺が！？,くそ〜、やっちまった,
 53,4主,SELF_ELIMINATED,やっちまった…,負けは負けだ…,
 53,5主,SELF_ELIMINATED,パパやっちゃった…,パパくやしい！,
