@@ -22,7 +22,7 @@ interface PlayerCardProps {
   expression: string;
   speech?: string;
   getExpressionUrl: (playerId: string) => string;
-  onImageError?: (event: React.SyntheticEvent<HTMLImageElement>) => void;
+  onImageError?: (event: SyntheticEvent<HTMLImageElement>) => void;
   position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
   rankings: string[]; // 順位配列
   allPlayers?: Player[]; // 他人の手札枚数判定用
@@ -53,25 +53,28 @@ export function PlayerCard({
   const [isReactionAnimating, setIsReactionAnimating] = useState(false);
   const [isReactionFadingOut, setIsReactionFadingOut] = useState(false);
   const [previousEmoji, setPreviousEmoji] = useState<string>('');
-  const reactionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const fadeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const reactionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fadeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // デバウンス用
   const lastReactionTimeRef = useRef<number>(0);
-  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const debounceTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ★ 追加：同じ絵文字の重複発火を抑止するフラグ
   const lastShownEmojiRef = useRef<string>('');
   const isShowingRef = useRef<boolean>(false);
 
   // ==== ターン切り替え制御 ====
-  if (!window.turnChangeController) {
-    window.turnChangeController = {
-      lastTurnChange: 0,
-      activePlayerId: null,
-    };
-  }
+  useEffect(() => {
+    if (!window.turnChangeController) {
+      window.turnChangeController = {
+        lastTurnChange: 0,
+        activePlayerId: null,
+      };
+    }
+  }, []);
 
 
   // デバッグ: プレイヤー状態の変化を追跡
