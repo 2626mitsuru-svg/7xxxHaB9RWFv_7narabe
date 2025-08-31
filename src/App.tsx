@@ -24,7 +24,8 @@ export default function App() {
     selectedCPUs,
     isPlaying,
     gameSpeed,
-    playerSpeeches, // ★変更：PlayerSpeechState型に対応
+    playerSpeeches, // ★変更：PlayerSpeechState型に対応！
+  
     uiEffects,
     selectCPUs,
     startGame,
