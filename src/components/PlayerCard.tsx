@@ -83,7 +83,7 @@ export function PlayerCard({
 
     // 自分の手札が2枚または1枚の時
     if (handCount <= 2 && handCount > 0) {
-      return '♫';
+      return '😊';
     }
 
     // 他人の手札が1枚の時
