@@ -336,7 +336,7 @@ const FloatingExpressionArea = () => {
     <div className="relative">
       {/* 表情“丸”を相対基準にする（ここを基準に絵文字を絶対配置） */}
       <div
-        className="w-40 h-40 rounded-full border-4 overflow-hidden expression-border relative"
+        className="w-40 h-40 rounded-full border-4 overflow-hidden bg-white expression-border relative"
         style={{ borderColor: cpuColor.primary, zIndex: 50 }}
       >
         <ImageWithFallback
