@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import ImageWithFallback from '@/components/ImageWithFallback'; // 先読み＋クロスフェード画像
 import { Player } from '../types/game';
 import { getCPUColor, getPlayerBorderColor } from '../utils/cpuColors';
