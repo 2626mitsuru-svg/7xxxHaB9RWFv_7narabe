@@ -7,6 +7,8 @@ import {
 } from "../types/game";
 import { getCPUPlayer } from "../data/cpuPlayers";
 
+import { getLegalMoves } from "./gameLogic";
+
 /**
  * CPU個性システム（パス傾向調整版）
  * - パス過多を解決：基本的には「出せるなら出す」原則
@@ -527,42 +529,35 @@ function shouldMakeStrategicPassScoreBased(
   player: Player,
   characterCode: string,
 ): boolean {
-  // ストラテジーモジュールを直接インポート
   try {
-    // 動的インポートを使ってモジュールを読み込み
     import("./strategy/personas")
       .then((personasModule) => {
-        import("./strategy/features").then((featuresModule) => {
-          return executeStrategicPassLogic(
-            state,
-            player,
-            characterCode,
-            personasModule,
-            featuresModule,
-          );
-        });
+        // ← ここで return を付ける！
+        return import("./strategy/features")
+          .then((featuresModule) => {
+            executeStrategicPassLogic(
+              state, player, characterCode, personasModule, featuresModule
+            );
+          });
       })
       .catch((error) => {
         console.warn(
-          `[CPU] Strategic pass features not available, falling back to simple logic:`,
-          error,
+          "[CPU] Strategic pass features not available, falling back to simple logic:",
+          error
         );
       });
 
-    // 同期的な簡易実装にフォールバック
-    return executeSimpleStrategicPass(
-      state,
-      player,
-      characterCode,
-    );
+    // 同期フォールバック
+    return executeSimpleStrategicPass(state, player, characterCode);
   } catch (error) {
     console.warn(
-      `[CPU] Strategic pass features not available, falling back to simple logic:`,
-      error,
+      "[CPU] Strategic pass features not available, falling back to simple logic:",
+      error
     );
     return false;
   }
 }
+
 
 /**
  * ★簡易版ストラテジック判定（strategy モジュール不使用）
@@ -687,18 +682,12 @@ function estimatePlayOpportunityCost(
   state: GameState,
   player: Player,
 ): number {
-  // 既存の getLegalMoves を使用して簡易推定
-  const { getLegalMoves } = require("./gameLogic");
   const legalMoves = getLegalMoves(state, player.id) || [];
+
   if (legalMoves.length === 0) return 0;
 
-  // 新端開放やブロック解放がある場合は機会損失大
-  const opensNewEnds = legalMoves.some(
-    (m: any) => m.opensNewEnd,
-  );
-  const releasesBlock = legalMoves.some(
-    (m: any) => m.wouldReleaseMyBlock,
-  );
+  const opensNewEnds = legalMoves.some((m: any) => m.opensNewEnd);
+  const releasesBlock = legalMoves.some((m: any) => m.wouldReleaseMyBlock);
 
   let cost = opensNewEnds ? 0.5 : 0;
   cost += releasesBlock ? 0.8 : 0;
