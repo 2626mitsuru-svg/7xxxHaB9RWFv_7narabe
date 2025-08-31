@@ -9,16 +9,16 @@ import { SevensGameBoard } from './components/SevensGameBoard';
 import { DevErrorBoundary } from './components/DevErrorBoundary';
 import SevensGameBoard from './components/SevensGameBoard';
 
+
+
 export default function App() {
+
   return (
     <DevErrorBoundary>
       <SevensGameBoard />
     </DevErrorBoundary>
   );
-}
 
-
-export default function App() {
   const {
     gameState,
     selectedCPUs,
