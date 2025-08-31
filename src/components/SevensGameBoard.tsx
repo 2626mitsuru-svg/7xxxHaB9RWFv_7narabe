@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect, useRef } from 'react';
 import { GameState, PlayerSpeechState } from '../types/game';
 import { GameSpeed } from '../hooks/useSevensBridge';

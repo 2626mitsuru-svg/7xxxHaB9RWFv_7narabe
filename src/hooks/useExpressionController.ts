@@ -1,3 +1,5 @@
+'use client';
+
 // src/hooks/useExpressionController.ts
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { parseExpressionCSV } from '../data/expressions';
