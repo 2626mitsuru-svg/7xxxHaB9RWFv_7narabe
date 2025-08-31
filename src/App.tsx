@@ -5,6 +5,16 @@ import { useSevensBridge } from './hooks/useSevensBridge';
 import { CPUSelector } from './components/CPUSelector';
 import { SevensGameBoard } from './components/SevensGameBoard';
 
+// 'use client' は既にあり
+import { DevErrorBoundary } from './components/DevErrorBoundary';
+
+// return (
+<DevErrorBoundary>
+  <SevensGameBoard ... />
+</DevErrorBoundary>
+// )
+
+
 export default function App() {
   const {
     gameState,
