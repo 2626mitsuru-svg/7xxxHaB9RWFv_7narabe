@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { GameState } from '../types/game';
 import { getCPUColor } from '../utils/cpuColors';
 import { Button } from './ui/button';

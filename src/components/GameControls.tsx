@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from './ui/button';
 import { Slider } from './ui/slider';
 import { GameSpeed, GAME_SPEEDS } from '../hooks/useSevensBridge';

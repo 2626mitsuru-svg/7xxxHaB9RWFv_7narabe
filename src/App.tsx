@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSevensBridge } from './hooks/useSevensBridge';
 import { CPUSelector } from './components/CPUSelector';
 import { SevensGameBoard } from './components/SevensGameBoard';

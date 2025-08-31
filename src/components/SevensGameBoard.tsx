@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { GameState, PlayerSpeechState } from '../types/game';
 import { GameSpeed } from '../hooks/useSevensBridge';
 import { BoardSevens } from './BoardSevens';

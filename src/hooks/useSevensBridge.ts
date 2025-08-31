@@ -1,4 +1,4 @@
-import React, {
+import { 
   useState,
   useCallback,
   useEffect,
@@ -355,7 +355,7 @@ export function useSevensBridge() {
   }, [setExpressionFromEvent, setPermanentExpression]);
 
   // ---- Auto start after matchup (2s) ----
-const autoStartTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+const autoPlayRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 
 
