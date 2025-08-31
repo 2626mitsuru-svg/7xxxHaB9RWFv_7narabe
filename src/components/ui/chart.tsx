@@ -4,13 +4,15 @@ import * as React from "react";
 import * as RechartsPrimitive from "recharts@2.15.2";
 
 import { cn } from "./utils";
+import type { ReactNode } from 'react';
+
 
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const;
 
 export type ChartConfig = {
   [k in string]: {
-    label?: React.ReactNode;
+    label?: ReactNode;
     icon?: React.ComponentType;
   } & (
     | { color?: string; theme?: never }
@@ -128,7 +130,7 @@ function ChartTooltipContent({
   }) {
   const { config } = useChart();
 
-  const tooltipLabel = React.useMemo(() => {
+  const tooltipLabel = useMemo(() => {
     if (hideLabel || !payload?.length) {
       return null;
     }

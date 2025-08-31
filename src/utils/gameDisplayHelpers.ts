@@ -1,5 +1,7 @@
 import { getCPUColor } from './cpuColors';
 import { PLAYER_POSITIONS } from '../constants/gameConstants';
+import type { SyntheticEvent } from 'react';
+
 
 // 利用可能な表情リスト（7種類）
 export const AVAILABLE_EXPRESSIONS = [
@@ -62,7 +64,7 @@ export const getPlayerPosition = (index: number): 'top-left' | 'top-right' | 'bo
 };
 
 // 画像エラー時のフォールバック処理（無限ループ防止）
-export const handleImageError = (event: React.SyntheticEvent<HTMLImageElement>) => {
+export const handleImageError = (event: SyntheticEvent<HTMLImageElement>) => {
   const img = event.target as HTMLImageElement;
   
   // 既にフォールバック済みまたはneutralの場合は何もしない
