@@ -457,7 +457,7 @@ export function PlayerCard({
     );
   };
 
-  // 位置別レイアウト（表情と情報の“実体”は浮遊レイヤにあり、ここはスペーサー）
+  // 位置別レイアウト（表情と情報の“実体”は浮遊レイヤにあり、ここはスペーサ〜）
   const getLayoutByPosition = () => {
     switch (position) {
       case 'top-left':
