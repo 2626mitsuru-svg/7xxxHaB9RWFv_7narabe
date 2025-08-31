@@ -108,6 +108,9 @@ const EXPRESSION_TTL = {
   default: () => 1800 + Math.random() * 400, // 1800-2200ms
 };
 
+// 表情TTL（ミリ秒）の下あたりに追加
+const MIN_SWITCH_INTERVAL_MS = 180; // ★ 追加: 最小切替間隔
+
 /**
  * 表情制御フック
  * - 同表情連続抑止（neutralは例外）
@@ -158,6 +161,14 @@ export function useExpressionController() {
       ) {
         return;
       }
+
+     // ★ クールダウン: 前回から一定時間未満ならスキップ
+     if (currentState && now - currentState.lastSet < MIN_SWITCH_INTERVAL_MS) {
+       // 同じ表情なら無視、違う表情でも直近すぎるなら捨てる
+       if (!options?.forcePermanent) {
+         return;
+       }
+     }
 
       // 既存タイマークリア
       if (timeoutsRef.current[playerId]) {
@@ -284,6 +295,11 @@ export function useExpressionController() {
         );
         return;
       }
+
+           // ★ クールダウン: 直近の切替から短すぎる場合は無視
+     if (currentState && now - currentState.lastSet < MIN_SWITCH_INTERVAL_MS) {
+       return;
+     }
 
       // イベントに対応する表情候補を取得
       const eventExpressions = expressionMapRef.current[eventKey] || [];
