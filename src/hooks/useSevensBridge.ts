@@ -1,10 +1,11 @@
-import React, {
+import {
   useState,
   useCallback,
   useEffect,
   useRef,
   useLayoutEffect,
 } from "react";
+
 import {
   GameState,
   Player,
@@ -73,7 +74,7 @@ const FINISH_KEYS: EventKey[] = [
 ];
 
 // ★終了系イベントに対応する永続表情マップ
-const FINISH_EXPRESSION_MAP: Record<EventKey, Expression> = {
+const FINISH_EXPRESSION_MAP: Record<EventKey, 'happy' | 'neutral' | 'disappointed'> = {
   "WINNER": "happy",
   "FINISH_1ST": "happy",
   "FINISH_2ND": "neutral",
@@ -275,7 +276,7 @@ export function useSevensBridge() {
   // 表情制御システム
   const { setExpressionFromEvent, setPermanentExpression, getExpression, getExpressionUrl } = useExpressionController();
 
-  const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
+  const autoPlayRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const logThrottleRef = useRef<{
     lastUpdate: number;
     queue: string[];
