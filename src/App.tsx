@@ -1,31 +1,17 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { useSevensBridge } from './hooks/useSevensBridge';
-import { CPUSelector } from './components/CPUSelector';
-import { SevensGameBoard } from './components/SevensGameBoard';
-
-
-import { DevErrorBoundary } from './components/DevErrorBoundary';
-import SevensGameBoard from './components/SevensGameBoard';
-
-
+import SevensGameBoard from './components/SevensGameBoard'; // ← default輸入に統一
 
 export default function App() {
-
-  return (
-    <DevErrorBoundary>
-      <SevensGameBoard />
-    </DevErrorBoundary>
-  );
-
+  // ★ フックはコンポーネント冒頭で無条件に呼ぶ
   const {
     gameState,
     selectedCPUs,
     isPlaying,
     gameSpeed,
-    playerSpeeches, // ★変更：PlayerSpeechState型に対応！
-  
+    playerSpeeches,
     uiEffects,
     selectCPUs,
     startGame,
@@ -34,7 +20,7 @@ export default function App() {
     resetGame,
     setGameSpeed,
     getExpression,
-    getExpressionUrl
+    getExpressionUrl,
   } = useSevensBridge();
 
   // ゲーム開始後に自動でオートプレイを開始
@@ -42,13 +28,14 @@ export default function App() {
     if (gameState && gameState.gamePhase === 'playing' && !isPlaying) {
       const timer = setTimeout(() => {
         autoPlay();
-      }, 1500); // 1.5秒後に自動開始
+      }, 1500);
       return () => clearTimeout(timer);
     }
   }, [gameState?.gamePhase, isPlaying, autoPlay]);
 
   // ゲーム未開始の場合はCPU選択画面
   if (!gameState) {
+    const { CPUSelector } = require('./components/CPUSelector'); // 動的importでもOK
     return (
       <div className="min-h-screen bg-neutral-950 text-neutral-100 flex items-center justify-center">
         <div className="w-full max-w-6xl">
@@ -70,7 +57,7 @@ export default function App() {
       gameState={gameState}
       isPlaying={isPlaying}
       gameSpeed={gameSpeed}
-      playerSpeeches={playerSpeeches} // ★変更：並列発話対応
+      playerSpeeches={playerSpeeches}
       uiEffects={uiEffects}
       onPlayTurn={playTurn}
       onAutoPlay={autoPlay}
