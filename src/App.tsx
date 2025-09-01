@@ -1,11 +1,10 @@
 'use client';
-
 import React, { useEffect } from 'react';
 import { useSevensBridge } from './hooks/useSevensBridge';
-import SevensGameBoard from './components/SevensGameBoard'; // ← default輸入に統一
+import SevensGameBoard from './components/SevensGameBoard';
 
 export default function App() {
-  // ★ フックはコンポーネント冒頭で無条件に呼ぶ
+  // ★ 無条件に先頭で呼ぶ
   const {
     gameState,
     selectedCPUs,
@@ -23,19 +22,15 @@ export default function App() {
     getExpressionUrl,
   } = useSevensBridge();
 
-  // ゲーム開始後に自動でオートプレイを開始
   useEffect(() => {
-    if (gameState && gameState.gamePhase === 'playing' && !isPlaying) {
-      const timer = setTimeout(() => {
-        autoPlay();
-      }, 1500);
-      return () => clearTimeout(timer);
+    if (gameState?.gamePhase === 'playing' && !isPlaying) {
+      const t = setTimeout(() => autoPlay(), 1500);
+      return () => clearTimeout(t);
     }
   }, [gameState?.gamePhase, isPlaying, autoPlay]);
 
-  // ゲーム未開始の場合はCPU選択画面
   if (!gameState) {
-    const { CPUSelector } = require('./components/CPUSelector'); // 動的importでもOK
+    const { CPUSelector } = require('./components/CPUSelector');
     return (
       <div className="min-h-screen bg-neutral-950 text-neutral-100 flex items-center justify-center">
         <div className="w-full max-w-6xl">
@@ -51,7 +46,6 @@ export default function App() {
     );
   }
 
-  // ゲーム進行中はゲームボード表示
   return (
     <SevensGameBoard
       gameState={gameState}
