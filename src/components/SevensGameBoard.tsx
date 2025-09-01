@@ -26,7 +26,7 @@ interface SevensGameBoardProps {
   getExpressionUrl: (playerId: string) => string;
 }
 
-export default function SevensGameBoard() {
+export default function SevensGameBoard({
   gameState,
   isPlaying,
   gameSpeed,
