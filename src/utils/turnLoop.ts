@@ -1,37 +1,29 @@
-import {
-  GameState,
-  Player,
-  Move,
-  Card,
-  ReactionEvent,
-} from "../types/game";
-import {
-  getLegalMoves,
-  removeCardFromHand,
-  getMaxPassCount,
-  placeLoserHandOnBoardWithMeta,
-  dumpAllLosersHandsToBoard,
-  finalizeBoardFill,
-  placeCard,
-  getRankOfPlayer,
-  pushUiFx,
-} from "./gameLogic";
-import { recomputeAllLegalMoves } from "./recompute";
-import { CPUActionSystem } from "./cpuActionSystem";
+// --- UIFx helper (single declaration only) ---
+import type { ReactionEvent, GameState } from "../types/game"; // ← なければ追加
 
+const uiFxCooldown: Record<string, number> = {};
 
-// turnLoop.ts（ファイル先頭付近）
-const lastFxAt: Record<string, number> = {}; // `${kind}:${pid}` → ts
-function queueFx(state: GameState, ev: ReactionEvent, cooldown = 900, prob = 1.0) {
+export function queueFx(
+  state: GameState,
+  ev: ReactionEvent,
+  cooldown = 900,
+  prob = 1.0
+) {
   const pid =
-    (ev as any).playerId ?? (ev as any).by ?? (ev as any).meta?.target ?? 'all';
-  const key = `${ev.kind}:${pid}`;
+    (ev as any).playerId ??
+    (ev as any).by ??
+    (ev as any).meta?.target ??
+    "all";
+  const key = `${(ev as any).kind}:${pid}`;
   const now = Date.now();
+
   if (Math.random() > prob) return;
-  if (lastFxAt[key] && now - lastFxAt[key] < cooldown) return;
-  lastFxAt[key] = now;
+  if (uiFxCooldown[key] && now - uiFxCooldown[key] < cooldown) return;
+
+  uiFxCooldown[key] = now;
   pushUiFx(state, ev);
 }
+
 
 // 0/1ベース混在の安全弁：内部が 0 でも 1 でも常に 1ベースで返す
 const toOneBasedRank = (r: number | undefined | null): number | undefined => {
