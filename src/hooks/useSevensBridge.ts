@@ -310,14 +310,7 @@ export function useSevensBridge() {
               key = observerPassCount >= maxPass ? 'OTHER_PASS_RISK' : 'OTHER_PASS_NORMAL';
             }
             speak(targetId, key as EventKey, setPlayerSpeeches);
-          }
-           case "react:self:multiChoice": {
-           // … を表示（実装は他のself系と同じ。絵文字はUI側の既存マップに合わせる）
-          setReactionEmoji(ev.playerId ?? state.players[state.currentPlayerIndex].id, "…");
-          break;
-         }
 
-          break;
         }
         case 'react:others:passStreak': {
           (gameState?.players ?? [])
@@ -363,6 +356,17 @@ export function useSevensBridge() {
           emitSpeech('OTHER_ELIMINATED', pid, 'others', setPlayerSpeeches);
           break;
         }
+
+
+        case 'react:self:multiChoice': {
+          // 複数合法手で「…」を出す
+          const pid =
+            (ev as any).playerId ??
+            gameState?.players?.[gameState.currentPlayerIndex]?.id;
+          if (pid) setReactionEmoji(pid, '…', 1400);
+          break;
+        }
+
         case 'react:self:rank': {
           const pid = (ev as any).playerId as string;
           const key = (ev as any).meta?.key as EventKey;
