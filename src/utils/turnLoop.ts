@@ -19,11 +19,26 @@ import {
 import { recomputeAllLegalMoves } from "./recompute";
 import { CPUActionSystem } from "./cpuActionSystem";
 
+
+// turnLoop.ts（ファイル先頭付近）
+const lastFxAt: Record<string, number> = {}; // `${kind}:${pid}` → ts
+function queueFx(state: GameState, ev: ReactionEvent, cooldown = 900, prob = 1.0) {
+  const pid =
+    (ev as any).playerId ?? (ev as any).by ?? (ev as any).meta?.target ?? 'all';
+  const key = `${ev.kind}:${pid}`;
+  const now = Date.now();
+  if (Math.random() > prob) return;
+  if (lastFxAt[key] && now - lastFxAt[key] < cooldown) return;
+  lastFxAt[key] = now;
+  pushUiFx(state, ev);
+}
+
 // 0/1ベース混在の安全弁：内部が 0 でも 1 でも常に 1ベースで返す
 const toOneBasedRank = (r: number | undefined | null): number | undefined => {
   if (typeof r !== "number") return undefined;
   return r >= 1 ? r : r + 1;
 };
+
 
 
 /**
@@ -475,7 +490,7 @@ function handlePlayAction(
     console.debug(
       `[handlePlayAction] Starter decided: ${playerId} with ♦7`,
     );
-    queueFx(state, { kind: "react:self:starter", playerId } as any, 900, 0.6); // ♫ はやや抑制
+    queueFx(state, { kind: "react:self:multiChoice", playerId } as any, 900, 0.7); // …
   }
 
   // カード配置実行
@@ -496,11 +511,7 @@ function handlePlayAction(
     console.debug(
       `[handlePlayAction] Hand count transition: ${playerId} 2->1`,
     );
-    pushUiFx(state, {
-      kind: "react:self:rank",
-      playerId,
-      meta: { key: "HAND_COUNT_ONE" },
-    } as any);
+    queueFx(state, { kind: "react:self:rank", playerId, meta: { key: "HAND_COUNT_ONE" } } as any, 1200, 1.0); // ❗️
   }
 
   // ★終了確定フラグ（終了確定後は一般イベントを抑止）
@@ -653,7 +664,7 @@ function handlePlayAction(
         `[handlePlayAction] Observer ${o.id}: ${beforeN} -> ${afterN} (blocked: ${blocked})`,
       );
 
-      queueFx(state, { kind: "react:others:cardPlaced", by: playerId, card, meta: { target: o.id, blocked } } as any, 900, blocked ? 1 : 0.7);
+      queueFx(state, { kind: "react:others:cardPlaced", by: playerId, card, meta: { target: o.id, blocked } } as any, 900, blocked ? 1.0 : 0.7); // 💦/❗️
     });
   }
 
@@ -866,7 +877,7 @@ function handlePassAction(
       console.debug(
         `[handlePassAction] Pass streak: ${state.passStreak}`,
       );
-      queueFx(state, { kind: "react:others:passStreak", count: state.passStreak }, 900, 1);
+      queueFx(state, { kind: "react:others:passStreak", count: state.passStreak }, 900, 1.0); // 💦
     }
   }
 

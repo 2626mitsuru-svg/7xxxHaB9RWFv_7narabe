@@ -311,6 +311,12 @@ export function useSevensBridge() {
             }
             speak(targetId, key as EventKey, setPlayerSpeeches);
           }
+           case "react:self:multiChoice": {
+           // … を表示（実装は他のself系と同じ。絵文字はUI側の既存マップに合わせる）
+          setReactionEmoji(ev.playerId ?? state.players[state.currentPlayerIndex].id, "…");
+          break;
+         }
+
           break;
         }
         case 'react:others:passStreak': {
