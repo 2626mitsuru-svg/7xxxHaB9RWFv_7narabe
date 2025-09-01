@@ -50,6 +50,20 @@ export interface TurnResult {
 // 進捗ウォッチ（無限停滞の最後の保険）
 let stallGuard = { hash: "", repeats: 0 };
 
+// src/utils/turnLoop.ts（先頭付近）
+const lastFxAt: Record<string, number> = {}; // `${kind}:${playerId}` → ts
+function queueFx(state: GameState, ev: ReactionEvent, cooldown = 900, prob = 1.0) {
+  const pid =
+    (ev as any).playerId ?? (ev as any).by ?? (ev as any).meta?.target ?? 'all';
+  const key = `${ev.kind}:${pid}`;
+  const now = Date.now();
+  if (Math.random() > prob) return;
+  if (lastFxAt[key] && now - lastFxAt[key] < cooldown) return;
+  lastFxAt[key] = now;
+  pushUiFx(state, ev);
+}
+
+
 function snapshotHash(state: GameState): string {
   // 盤面・手札枚数・パスカウント・現在手番のみ（軽量）
   const boardSig = JSON.stringify(state.board);
@@ -461,10 +475,7 @@ function handlePlayAction(
     console.debug(
       `[handlePlayAction] Starter decided: ${playerId} with ♦7`,
     );
-    pushUiFx(state, {
-      kind: "react:self:starter",
-      playerId,
-    } as any);
+    queueFx(state, { kind: "react:self:starter", playerId } as any, 900, 0.6); // ♫ はやや抑制
   }
 
   // カード配置実行
@@ -479,11 +490,7 @@ function handlePlayAction(
     console.debug(
       `[handlePlayAction] Hand count transition: ${playerId} 3->2`,
     );
-    pushUiFx(state, {
-      kind: "react:self:rank",
-      playerId,
-      meta: { key: "HAND_COUNT_TWO" },
-    } as any);
+    queueFx(state, { kind: "react:self:rank", playerId, meta: { key: "HAND_COUNT_ONE" } } as any, 1200, 1);
   }
   if (prevCount >= 2 && nowCount === 1) {
     console.debug(
@@ -646,12 +653,7 @@ function handlePlayAction(
         `[handlePlayAction] Observer ${o.id}: ${beforeN} -> ${afterN} (blocked: ${blocked})`,
       );
 
-      pushUiFx(state, {
-        kind: "react:others:cardPlaced",
-        by: playerId,
-        card,
-        meta: { target: o.id, blocked },
-      });
+      queueFx(state, { kind: "react:others:cardPlaced", by: playerId, card, meta: { target: o.id, blocked } } as any, 900, blocked ? 1 : 0.7);
     });
   }
 
@@ -856,11 +858,7 @@ function handlePassAction(
       console.debug(
         `[handlePassAction] Pass reaction: ${o.id} -> ${key} (passCount: ${o.passCount}/${maxPass})`,
       );
-      pushUiFx(state, {
-        kind: "react:others:pass",
-        by: playerId,
-        meta: { target: o.id, key },
-      });
+      queueFx(state, { kind: "react:others:pass", by: playerId, meta: { target: o.id } } as any, 900, 1);
     });
 
     // パス連続発生の通知
@@ -868,10 +866,7 @@ function handlePassAction(
       console.debug(
         `[handlePassAction] Pass streak: ${state.passStreak}`,
       );
-      pushUiFx(state, {
-        kind: "react:others:passStreak",
-        count: state.passStreak,
-      });
+      queueFx(state, { kind: "react:others:passStreak", count: state.passStreak }, 900, 1);
     }
   }
 
