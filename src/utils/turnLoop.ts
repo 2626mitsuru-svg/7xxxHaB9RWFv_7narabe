@@ -57,19 +57,6 @@ export interface TurnResult {
 // 進捗ウォッチ（無限停滞の最後の保険）
 let stallGuard = { hash: "", repeats: 0 };
 
-// src/utils/turnLoop.ts（先頭付近）
-const lastFxAt: Record<string, number> = {}; // `${kind}:${playerId}` → ts
-function queueFx(state: GameState, ev: ReactionEvent, cooldown = 900, prob = 1.0) {
-  const pid =
-    (ev as any).playerId ?? (ev as any).by ?? (ev as any).meta?.target ?? 'all';
-  const key = `${ev.kind}:${pid}`;
-  const now = Date.now();
-  if (Math.random() > prob) return;
-  if (lastFxAt[key] && now - lastFxAt[key] < cooldown) return;
-  lastFxAt[key] = now;
-  pushUiFx(state, ev);
-}
-
 
 function snapshotHash(state: GameState): string {
   // 盤面・手札枚数・パスカウント・現在手番のみ（軽量）
