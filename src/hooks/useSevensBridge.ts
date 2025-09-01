@@ -297,11 +297,14 @@ export function useSevensBridge() {
           if (targetId) speak(targetId, blocked ? 'OTHER_OPP_BLOCK' : 'OTHER_OPP_NORMAL', setPlayerSpeeches);
           break;
         }
+        
         case 'react:others:pass': {
           const by = (ev as any).by as string | undefined;
           if (by) setReactionEmoji(by, '💦', 2000);
+
           const targetId = (ev as any).meta?.target as string | undefined;
           let key: EventKey | undefined = (ev as any).meta?.key;
+
           if (targetId) {
             if (!key) {
               const observer = gameState?.players?.find(p => p.id === targetId);
@@ -310,8 +313,11 @@ export function useSevensBridge() {
               key = observerPassCount >= maxPass ? 'OTHER_PASS_RISK' : 'OTHER_PASS_NORMAL';
             }
             speak(targetId, key as EventKey, setPlayerSpeeches);
+          }
 
+          break;
         }
+
         case 'react:others:passStreak': {
           (gameState?.players ?? [])
             .filter(p => !p.isFinished && !p.isEliminated)
