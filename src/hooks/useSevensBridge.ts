@@ -281,7 +281,7 @@ export function useSevensBridge() {
         autoPlay();
       } catch {}
     }, 3000);
-  }, []); // autoPlay は後で定義。参照時には安定している
+  }, []); // autoPlay は後で定義。参照時には安定している！
 
   // UIキュー（emoji＋speechの“重複case”を1つに統合）
   useEffect(() => {
@@ -297,7 +297,7 @@ export function useSevensBridge() {
           if (targetId) speak(targetId, blocked ? 'OTHER_OPP_BLOCK' : 'OTHER_OPP_NORMAL', setPlayerSpeeches);
           break;
         }
-        
+
         case 'react:others:pass': {
           const by = (ev as any).by as string | undefined;
           if (by) setReactionEmoji(by, '💦', 2000);
