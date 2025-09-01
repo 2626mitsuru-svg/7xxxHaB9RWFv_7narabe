@@ -213,7 +213,6 @@ describe('七並べロジックテスト', () => {
       const hand = [makeCard('♠', 6)];
       const passCount = 1; // 上限3未満
       
-      const { canPassStrategic } = require('../utils/gameLogic');
       expect(canPassStrategic(board, hand, passCount, defaultOptions)).toBe(true);
     });
 
@@ -224,7 +223,6 @@ describe('七並べロジックテスト', () => {
       const hand = [makeCard('♠', 6)];
       const passCount = 3; // 上限到達
       
-      const { canPassStrategic } = require('../utils/gameLogic');
       expect(canPassStrategic(board, hand, passCount, defaultOptions)).toBe(false);
     });
   });

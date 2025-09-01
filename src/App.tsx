@@ -2,6 +2,7 @@
 import React, { useEffect } from 'react';
 import { useSevensBridge } from './hooks/useSevensBridge';
 import SevensGameBoard from './components/SevensGameBoard';
+import { CPUSelector } from './components/CPUSelector';
 
 export default function App() {
   // ★ 無条件に先頭で呼ぶ
@@ -30,7 +31,6 @@ export default function App() {
   }, [gameState?.gamePhase, isPlaying, autoPlay]);
 
   if (!gameState) {
-    const { CPUSelector } = require('./components/CPUSelector');
     return (
       <div className="min-h-screen bg-neutral-950 text-neutral-100 flex items-center justify-center">
         <div className="w-full max-w-6xl">
