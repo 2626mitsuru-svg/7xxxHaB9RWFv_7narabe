@@ -1,6 +1,6 @@
 // --- UIFx helper (single declaration only) ---
 import type { ReactionEvent, GameState } from "../types/game"; // ← なければ追加
-import type { CPUActionSystem } from "./CPUActionSystem"; // ← なければ追加
+import { CPUActionSystem } from "./CPUActionSystem"; // ← なければ追加
 
 
 const uiFxCooldown: Record<string, number> = {};
