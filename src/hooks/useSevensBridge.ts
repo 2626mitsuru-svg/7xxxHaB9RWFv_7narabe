@@ -23,6 +23,33 @@ import {
 import { useExpressionController } from './useExpressionController';
 import { speakByPlayerId, EventKey } from '../data/events';
 import { executeSpecialCombinationSpeech } from '../utils/startingCombinationSpeech';
+import { tryEmitEmoji } from "../utils/emojiEngine";
+
+
+// ====== ここから追加：絵文字の“安全版”ラッパ ======
+const lastEmojiAt: Record<string, number> = {};
+
+function setReactionEmojiSafe(
+  playerId: string,
+  emoji: string,
+  ttl: number,
+  cooldown: number = Math.min(ttl, 1200)
+) {
+  const now = Date.now();
+  const key = `${playerId}:${emoji}`;
+  const prev = lastEmojiAt[key] || 0;
+  if (now - prev < cooldown) return; // 短時間の連打を抑止
+  lastEmojiAt[key] = now;
+
+  // 既存の setReactionEmoji を尊重して呼び出す
+  // @ts-ignore 型が無くても通す
+  if (typeof setReactionEmoji === "function") {
+    // @ts-ignore
+    setReactionEmoji(playerId, emoji, ttl);
+  }
+}
+// ====== 追加ここまで ======
+
 
 /* -------------------- 定数・ヘルパ（フック以外OK） -------------------- */
 
@@ -293,14 +320,14 @@ export function useSevensBridge() {
         case 'react:others:cardPlaced': {
           const targetId = (ev as any).meta?.target as string | undefined;
           const blocked = !!(ev as any).meta?.blocked;
-          if (targetId) setReactionEmoji(targetId, blocked ? '❗️' : '💦', blocked ? 1800 : 1400);
+          if (targetId) setReactionEmojiSafe(targetId, blocked ? '❗️' : '💦', blocked ? 1800 : 1400);
           if (targetId) speak(targetId, blocked ? 'OTHER_OPP_BLOCK' : 'OTHER_OPP_NORMAL', setPlayerSpeeches);
           break;
         }
 
         case 'react:others:pass': {
           const by = (ev as any).by as string | undefined;
-          if (by) setReactionEmoji(by, '💦', 2000);
+          if (by) setReactionEmojiSafe(by, '💦', 2000);
 
           const targetId = (ev as any).meta?.target as string | undefined;
           let key: EventKey | undefined = (ev as any).meta?.key;
@@ -321,20 +348,20 @@ export function useSevensBridge() {
         case 'react:others:passStreak': {
           (gameState?.players ?? [])
             .filter(p => !p.isFinished && !p.isEliminated)
-            .forEach(p => setReactionEmoji(p.id, '❗️', 900));
+            .forEach(p => .forEach(p => setReactionEmojiSafe(p.id, '❗️', 900));
           emitSpeech('PASS_STREAK_OBSERVED', null, 'all', setPlayerSpeeches);
           break;
         }
         case 'react:self:starter': {
           const pid = (ev as any).playerId as string;
-          if (pid) setReactionEmoji(pid, '♫', 2400);
+          if (pid) setReactionEmojiSafe(pid, '♫', 2400);
           emitSpeech('STARTER_DECIDED', pid, 'self', setPlayerSpeeches);
           break;
         }
         case 'react:self:finish': {
           const pid = (ev as any).playerId as string;
           const reason = (ev as any).reason as 'win' | 'foul' | 'passOver' | 'lastPlace';
-          if (pid) setReactionEmoji(pid, reason === 'win' ? '🎉' : '💦', 3200);
+          if (pid) setReactionEmojiSafe(pid, reason === 'win' ? '🎉' : '💦', 3200, 1800);
           if (reason === 'win') emitSpeech('WINNER', pid, 'self', setPlayerSpeeches);
           else if (reason === 'lastPlace') emitSpeech('LAST_PLACE_CONFIRMED', pid, 'self', setPlayerSpeeches);
           else if (reason === 'foul') {
@@ -350,7 +377,7 @@ export function useSevensBridge() {
           const loserId = (ev as any).loserId as string;
           (gameState?.players ?? [])
             .filter(p => p.id !== loserId)
-            .forEach(p => setReactionEmoji(p.id, '💥', 1800));
+            .forEach(p => .forEach(p => setReactionEmojiSafe(p.id, '💥', 1800));
           emitSpeech('ELIMINATION_MASS_PLACEMENT', loserId, 'others', setPlayerSpeeches);
           break;
         }
@@ -358,7 +385,7 @@ export function useSevensBridge() {
           const pid = (ev as any).playerId as string;
           (gameState?.players ?? [])
             .filter(p => p.id !== pid)
-            .forEach(p => setReactionEmoji(p.id, '💦', 1200));
+            .forEach(p => .forEach(p => setReactionEmojiSafe(p.id, '💦', 1200));
           emitSpeech('OTHER_ELIMINATED', pid, 'others', setPlayerSpeeches);
           break;
         }

@@ -6,8 +6,10 @@ import {
   LegalMove,
 } from "../types/game";
 import { getCPUPlayer } from "../data/cpuPlayers";
-
 import { getLegalMoves } from "./gameLogic";
+import * as personasModule from "./strategy/personas";
+import * as featuresModule from "./strategy/features";
+
 
 /**
  * CPU個性システム（パス傾向調整版）
@@ -524,37 +526,23 @@ export function shouldMakeStrategicPass(
 /**
  * ★新機能：スコア式戦略的パス判定
  */
-function shouldMakeStrategicPassScoreBased(
+
+export function shouldMakeStrategicPassScoreBased(
   state: GameState,
   player: Player,
   characterCode: string,
 ): boolean {
   try {
-    import("./strategy/personas")
-      .then((personasModule) => {
-        // ← ここで return を付ける！
-        return import("./strategy/features")
-          .then((featuresModule) => {
-            executeStrategicPassLogic(
-              state, player, characterCode, personasModule, featuresModule
-            );
-          });
-      })
-      .catch((error) => {
-        console.warn(
-          "[CPU] Strategic pass features not available, falling back to simple logic:",
-          error
-        );
-      });
-
-    // 同期フォールバック
-    return executeSimpleStrategicPass(state, player, characterCode);
-  } catch (error) {
-    console.warn(
-      "[CPU] Strategic pass features not available, falling back to simple logic:",
-      error
+    return executeStrategicPassLogic(
+      state,
+      player,
+      characterCode,
+      personasModule,
+      featuresModule
     );
-    return false;
+  } catch (error) {
+    console.warn("[CPU] Strategic pass features not available, falling back to simple logic:", error);
+    return executeSimpleStrategicPass(state, player, characterCode);
   }
 }
 
