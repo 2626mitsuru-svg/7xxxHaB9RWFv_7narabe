@@ -1,6 +1,7 @@
 // --- UIFx helper (single declaration only) ---
 import type { ReactionEvent, GameState } from "../types/game"; // ← なければ追加
 import { CPUActionSystem } from "./cpuActionSystem"; // ← なければ追加
+import { getLegalMoves, getMaxPassCount } from "./gameLogic";
 
 
 const uiFxCooldown: Record<string, number> = {};
