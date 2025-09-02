@@ -14,7 +14,6 @@ export type EventKey =
   // turn / think
   | "TURN_START"
   | "NO_LEGAL_MOVES_DETECTED"
-  | "DOOMED_DETECTED"
   | "MULTIPLE_LEGAL_MOVES"
   | "PASS_WARNING"
   // play（出し方のニュアンス）
