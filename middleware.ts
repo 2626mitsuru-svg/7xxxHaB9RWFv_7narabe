@@ -1,26 +1,23 @@
-// middleware.ts
 import { NextRequest, NextResponse } from 'next/server';
 
-const BASIC_USER = (process.env.BASIC_USER || '').trim();
-const BASIC_PASS = (process.env.BASIC_PASS || '').trim();
+const BASIC_USER = process.env.BASIC_USER || '';
+const BASIC_PASS = process.env.BASIC_PASS || '';
 
 export const config = {
-  // /site 以下だけを保護。_next や / は素通しにして干渉を無くす
-  matcher: ['/site/:path*'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 };
 
 export default function middleware(req: NextRequest) {
   const auth = req.headers.get('authorization');
   if (auth?.startsWith('Basic ')) {
     try {
-      const b64 = auth.split(' ')[1] || '';
-      const [u = '', p = ''] = atob(b64).split(':'); // ※ パスワードに「:」は使わない
-      if (u === BASIC_USER && p === BASIC_PASS) {
-        const res = NextResponse.next();
-        res.headers.set('Cache-Control', 'private, no-store, no-cache, must-revalidate');
-        return res;
+      const base64 = auth.split(' ')[1] || '';
+      const decoded = atob(base64);
+      const [user, pass] = decoded.split(':');
+      if (user === BASIC_USER && pass === BASIC_PASS) {
+        return NextResponse.next();
       }
-    } catch { /* noop */ }
+    } catch {}
   }
   return new NextResponse('Authentication required', {
     status: 401,
