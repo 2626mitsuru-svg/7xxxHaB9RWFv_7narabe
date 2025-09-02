@@ -15,6 +15,9 @@ import {
 } from "../types/game";
 import { GAP, isEmptyCell, Cell } from "../types/board";
 import { getCPUColor } from "./cpuColors";
+// UI FX を統一実装へ委譲（互換維持のため再エクスポート）
+export { pushUiFx, queueFx } from "./uiFx";
+
 
 export const SUITS: Suit[] = ["♠", "♥", "♦", "♣"];
 export const RANKS: Rank[] = [
@@ -56,16 +59,6 @@ export function createDeck(): Card[] {
   return deck;
 }
 
-// UIエフェクトキューへの追加ヘルパー
-export function pushUiFx(
-  state: GameState,
-  ev: ReactionEvent,
-): void {
-  if (!state.uiFx) state.uiFx = {};
-  const prev = state.uiFx.queue ?? [];
-  // ★参照を必ず更新：新しい配列を代入
-  state.uiFx = { ...state.uiFx, queue: [...prev, ev] };
-}
 
 // ownerIndexの構築（通常カードのみ）
 export function buildOwnerIndex(state: GameState): void {

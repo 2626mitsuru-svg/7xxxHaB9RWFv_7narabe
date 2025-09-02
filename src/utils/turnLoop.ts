@@ -2,30 +2,8 @@
 import type { ReactionEvent, GameState } from "../types/game"; // ← なければ追加
 import { CPUActionSystem } from "./cpuActionSystem"; // ← なければ追加
 import { getLegalMoves, getMaxPassCount } from "./gameLogic";
+import { queueFx } from "../utils/uiFx";
 
-
-const uiFxCooldown: Record<string, number> = {};
-
-export function queueFx(
-  state: GameState,
-  ev: ReactionEvent,
-  cooldown = 900,
-  prob = 1.0
-) {
-  const pid =
-    (ev as any).playerId ??
-    (ev as any).by ??
-    (ev as any).meta?.target ??
-    "all";
-  const key = `${(ev as any).kind}:${pid}`;
-  const now = Date.now();
-
-  if (Math.random() > prob) return;
-  if (uiFxCooldown[key] && now - uiFxCooldown[key] < cooldown) return;
-
-  uiFxCooldown[key] = now;
-  pushUiFx(state, ev);
-}
 
 
 // 0/1ベース混在の安全弁：内部が 0 でも 1 でも常に 1ベースで返す
