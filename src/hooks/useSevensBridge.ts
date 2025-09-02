@@ -348,7 +348,7 @@ export function useSevensBridge() {
         case 'react:others:passStreak': {
           (gameState?.players ?? [])
             .filter(p => !p.isFinished && !p.isEliminated)
-            .forEach(p => .forEach(p => setReactionEmojiSafe(p.id, '❗️', 900));
+            .forEach(p => setReactionEmojiSafe(p.id, '❗️', 900));
           emitSpeech('PASS_STREAK_OBSERVED', null, 'all', setPlayerSpeeches);
           break;
         }
@@ -377,7 +377,7 @@ export function useSevensBridge() {
           const loserId = (ev as any).loserId as string;
           (gameState?.players ?? [])
             .filter(p => p.id !== loserId)
-            .forEach(p => .forEach(p => setReactionEmojiSafe(p.id, '💥', 1800));
+            .forEach(p => setReactionEmojiSafe(p.id, '💥', 1800));
           emitSpeech('ELIMINATION_MASS_PLACEMENT', loserId, 'others', setPlayerSpeeches);
           break;
         }
@@ -385,7 +385,7 @@ export function useSevensBridge() {
           const pid = (ev as any).playerId as string;
           (gameState?.players ?? [])
             .filter(p => p.id !== pid)
-            .forEach(p => .forEach(p => setReactionEmojiSafe(p.id, '💦', 1200));
+            .forEach(p => setReactionEmojiSafe(p.id, '💦', 1200));
           emitSpeech('OTHER_ELIMINATED', pid, 'others', setPlayerSpeeches);
           break;
         }
